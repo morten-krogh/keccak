@@ -3,6 +3,7 @@ import test from "node:test";
 import {
 	add_bit_in_state_array,
 	get_bit_in_state_array,
+	is_zero_state_array,
 	make_state_array,
 	set_bit_in_state_array,
 } from "./state-array.js";
@@ -14,6 +15,7 @@ test("make state array", (_t) => {
 		const byte = state_array[i];
 		assert.equal(byte, 0);
 	}
+	assert(is_zero_state_array(state_array));
 });
 
 test("get bit in state array", (_t) => {
@@ -42,12 +44,14 @@ test("get bit in state array", (_t) => {
 	assert(get_bit_in_state_array(state_array, 4, 4, 61));
 	assert(!get_bit_in_state_array(state_array, 4, 4, 62));
 	assert(get_bit_in_state_array(state_array, 4, 4, 63));
+	assert(!is_zero_state_array(state_array));
 });
 
 test("set_bit in state array", (_t) => {
 	const state_array = make_state_array();
 	assert.equal(state_array[0], 0);
 	set_bit_in_state_array(state_array, 0, 0, 0, true);
+	assert(!is_zero_state_array(state_array));
 	assert.equal(state_array[0], 1);
 	set_bit_in_state_array(state_array, 0, 0, 1, true);
 	assert.equal(state_array[0], 3);
@@ -56,10 +60,13 @@ test("set_bit in state array", (_t) => {
 	set_bit_in_state_array(state_array, 0, 0, 0, false);
 	assert.equal(state_array[0], 0);
 	assert.equal(state_array[109], 0);
+	assert(is_zero_state_array(state_array));
 	set_bit_in_state_array(state_array, 3, 2, 47, true);
 	assert.equal(state_array[109], 128);
+	assert(!is_zero_state_array(state_array));
 	set_bit_in_state_array(state_array, 3, 2, 47, false);
 	assert.equal(state_array[109], 0);
+	assert(is_zero_state_array(state_array));
 });
 
 test("get and set bits in state array", (_t) => {

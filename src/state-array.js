@@ -64,9 +64,24 @@ function add_bit_in_state_array(state_array, x, y, z, bit) {
 	state_array[byte_index] ^= 1 << bit_offset;
 }
 
+/**
+ *
+ * @param {Uint8Array} state_array
+ * @returns {boolean}
+ */
+function is_zero_state_array(state_array) {
+	for (const entry of state_array) {
+		if (entry !== 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
 export {
 	make_state_array,
 	get_bit_in_state_array,
 	set_bit_in_state_array,
 	add_bit_in_state_array,
+	is_zero_state_array,
 };
