@@ -1,26 +1,35 @@
 {
-  "name": "keccak",
-  "version": "1.0.0",
-  "description": "Keccak cryptographic algorithm",
-  "keywords": [
-    "SHA3",
-    "Hash",
-    "Keccak",
-    "Sponge"
-  ],
-  "homepage": "https://github.com/morten-krogh/keccak#readme",
-  "bugs": {
-    "url": "https://github.com/morten-krogh/keccak/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/morten-krogh/keccak.git"
-  },
-  "license": "MIT",
-  "author": "Morten Krogh",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "test": "node --test \"src/**/*.test.js\""
-  }
+		"name": "keccak",
+		"version": "1.0.0",
+		"description": "Keccak cryptographic algorithm",
+		"keywords": [
+				"SHA3",
+				"Hash",
+				"Keccak",
+				"Sponge"
+		],
+		"homepage": "https://github.com/morten-krogh/keccak#readme",
+		"bugs": {
+				"url": "https://github.com/morten-krogh/keccak/issues"
+		},
+		"repository": {
+				"type": "git",
+				"url": "git+https://github.com/morten-krogh/keccak.git"
+		},
+		"license": "MIT",
+		"author": "Morten Krogh",
+		"type": "module",
+		"main": "index.js",
+		"scripts": {
+				"biome": "biome check src",
+				"tsc": "tsgo --project ./src/tsconfig.json",
+				"test": "node --test \"src/**/*.test.js\"",
+				"check": "npm run biome && npm run tsc && npm run test",
+				"fix": "biome check --write src"
+		},
+		"devDependencies": {
+				"@biomejs/biome": "2.1.4",
+				"@types/node": "^24.2.1",
+				"@typescript/native-preview": "^7.0.0-dev.20250809.1"
+		}
 }
