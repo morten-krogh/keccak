@@ -9,14 +9,14 @@ import {
 } from "../state-array.js";
 import { do_pi } from "./pi.js";
 
-test("Zero", (_t) => {
+test("pi all zero", (_t) => {
 	const state_array = make_state_array();
 	const scratch_space = make_state_array();
 	do_pi(state_array, scratch_space);
 	assert(is_zero_state_array(state_array));
 });
 
-test("Some ones", (_t) => {
+test("pi some ones", (_t) => {
 	const state_array = make_state_array();
 	const scratch_space = make_state_array();
 	set_bit_in_state_array(state_array, 0, 0, 0, true);
@@ -37,7 +37,7 @@ test("Some ones", (_t) => {
 	assert(!get_bit_in_state_array(state_array, 2, 4, 25));
 });
 
-test("All one", (_t) => {
+test("pi all one", (_t) => {
 	const state_array = make_state_array();
 	const scratch_space = make_state_array();
 	fill_state_array_with_byte(state_array, 255);
