@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+	fill_state_array_with_byte,
 	get_bit_in_state_array,
 	is_zero_state_array,
 	make_state_array,
@@ -48,13 +49,7 @@ test("Single one", (_t) => {
 test("All one", (_t) => {
 	const state_array = make_state_array();
 	const scratch_space = make_state_array();
-	for (let x = 0; x < 5; x++) {
-		for (let y = 0; y < 5; y++) {
-			for (let z = 0; z < 64; z++) {
-				set_bit_in_state_array(state_array, x, y, z, true);
-			}
-		}
-	}
+	fill_state_array_with_byte(state_array, 255);
 	do_theta(state_array, scratch_space);
 	for (let x = 0; x < 5; x++) {
 		for (let y = 0; y < 5; y++) {
