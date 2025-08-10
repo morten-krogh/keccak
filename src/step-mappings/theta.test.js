@@ -13,8 +13,6 @@ test("Zero", (_t) => {
 	const scratch_space = make_state_array();
 	do_theta(state_array, scratch_space);
 	assert(is_zero_state_array(state_array));
-	assert(!get_bit_in_state_array(state_array, 0, 0, 0));
-	assert(!get_bit_in_state_array(state_array, 2, 3, 41));
 });
 
 test("Single one", (_t) => {
