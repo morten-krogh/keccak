@@ -24,21 +24,21 @@ import { set_bit } from "./bit.js";
  * @returns {Uint8Array}
  */
 function pad(N, m, x) {
-        let j = (-m - 2) % x;
-        if (j < 0) {
-                j += x;
-        }
-        const len_padding = j + 2;
-        const len_padded_string = m + len_padding;
-        const len_padded_string_bytes = len_padded_string / 8;
-        const padded_string = new Uint8Array(len_padded_string_bytes);
-        padded_string.set(N.slice(0, Math.ceil(m / 8)), 0);
-        set_bit(padded_string, m, true);
-        for (let i = m + 1; i < m + j + 1; i++) {
-                set_bit(padded_string, i, false);
-        }
-        set_bit(padded_string, m + j + 1, true);
-        return padded_string;
+	let j = (-m - 2) % x;
+	if (j < 0) {
+		j += x;
+	}
+	const len_padding = j + 2;
+	const len_padded_string = m + len_padding;
+	const len_padded_string_bytes = len_padded_string / 8;
+	const padded_string = new Uint8Array(len_padded_string_bytes);
+	padded_string.set(N.slice(0, Math.ceil(m / 8)), 0);
+	set_bit(padded_string, m, true);
+	for (let i = m + 1; i < m + j + 1; i++) {
+		set_bit(padded_string, i, false);
+	}
+	set_bit(padded_string, m + j + 1, true);
+	return padded_string;
 }
 
 export { pad };
