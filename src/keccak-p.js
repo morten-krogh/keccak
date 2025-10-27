@@ -17,11 +17,11 @@ import { do_round } from "./round.js";
  * @param {number} nr
  */
 function keccak_p(A, scratch_space, nr) {
-	const i_round_start = 24 - nr;
-	const i_round_end = 24;
-	for (let i_round = i_round_start; i_round < i_round_end; i_round++) {
-		do_round(A, scratch_space, i_round);
-	}
+        const i_round_start = 24 - nr;
+        const i_round_end = 24;
+        for (let i_round = i_round_start; i_round < i_round_end; i_round++) {
+                do_round(A, scratch_space, i_round);
+        }
 }
 
 export { keccak_p };
