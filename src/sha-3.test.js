@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { keccak } from "./keccak.js";
 
+test("sha=H");
 // test("keccak zero", (_t) => {
 //         const r = 1344;
 //         const N = new Uint8Array(0);
