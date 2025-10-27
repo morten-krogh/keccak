@@ -1,5 +1,20 @@
-import { append_suffix } from "./suffix.js";
 import { keccak } from "./keccak.js";
+import { append_suffix } from "./suffix.js";
+
+/**
+ *
+ * @param {Uint8Array} M
+ * @param {number} d
+ * @returns {Uint8Array}
+ */
+function sha_3(M, d) {
+	const c = 2 * d;
+	const suffix = [2];
+	const N = append_suffix(M, suffix);
+	const m = N.length * 8;
+	const K = keccak(c, N, m, d);
+	return K;
+}
 
 /**
  *
@@ -7,18 +22,38 @@ import { keccak } from "./keccak.js";
  * @returns {Uint8Array}
  */
 function sha_3_224(M) {
-        const suffix = [2];
-        const N = append_suffix(M, suffix);
-        const c = 224;
-        const m = N.length * 8;
-        const d = 224;
-        const K = keccak(c, N, m, d);
-        return K;
+	const d = 224;
+	return sha_3(M, d);
 }
 
-// SHA3-224(M) = KECCAK[448] (M || 01, 224);
-// SHA3-256(M) = KECCAK[512] (M || 01, 256);
-// SHA3-384(M) = KECCAK[768] (M || 01, 384);
-// SHA3-512(M) = KECCAK[1024] (M || 01, 512).
+/**
+ *
+ * @param {Uint8Array} M
+ * @returns {Uint8Array}
+ */
+function sha_3_256(M) {
+	const d = 256;
+	return sha_3(M, d);
+}
 
-export { sha_3_224 };
+/**
+ *
+ * @param {Uint8Array} M
+ * @returns {Uint8Array}
+ */
+function sha_3_384(M) {
+	const d = 384;
+	return sha_3(M, d);
+}
+
+/**
+ *
+ * @param {Uint8Array} M
+ * @returns {Uint8Array}
+ */
+function sha_3_512(M) {
+	const d = 512;
+	return sha_3(M, d);
+}
+
+export { sha_3_224, sha_3_256, sha_3_384, sha_3_512 };

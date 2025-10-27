@@ -22,46 +22,46 @@ import { make_state_array } from "./state-array.js";
  * @returns {Uint8Array}
  */
 function keccak(c, N, m, d) {
-        const r = 1600 - c;
-        const P = pad(N, m, r);
-        const n = (8 * P.length) / r;
-        console.log({ n });
-        console.log(P);
-        for (let i = 0; i < P.length; i++) {
-                const byte = P[i];
-                if (byte !== 0) {
-                        console.log({ i, byte });
-                }
-        }
+	const r = 1600 - c;
+	const P = pad(N, m, r);
+	const n = (8 * P.length) / r;
+	console.log({ n });
+	console.log(P);
+	for (let i = 0; i < P.length; i++) {
+		const byte = P[i];
+		if (byte !== 0) {
+			console.log({ i, byte });
+		}
+	}
 
-        const state_array = make_state_array();
-        const scratch_space = make_state_array();
-        for (let i = 0; i < n; i++) {
-                const byte_count = r / 8;
-                const start_byte_index = i * byte_count;
-                for (let j = 0; j < byte_count; j++) {
-                        const byte_index = start_byte_index + j;
-                        // @ts-ignore
-                        state_array[j] ^= P[byte_index];
-                }
-                console.log("keccak-p input");
-                keccak_p(state_array, scratch_space, 24);
-        }
-        const Z = new Uint8Array(d / 8);
-        let output_index = 0;
-        let state_array_index = 0;
-        while (output_index < d / 8) {
-                // @ts-ignore
-                Z[output_index] = state_array[state_array_index];
-                output_index++;
-                state_array_index++;
-                if (state_array_index % (r / 8) === 0) {
-                        state_array_index = 0;
-                        console.log("keccak-p output");
-                        keccak_p(state_array, scratch_space, 24);
-                }
-        }
-        return Z;
+	const state_array = make_state_array();
+	const scratch_space = make_state_array();
+	for (let i = 0; i < n; i++) {
+		const byte_count = r / 8;
+		const start_byte_index = i * byte_count;
+		for (let j = 0; j < byte_count; j++) {
+			const byte_index = start_byte_index + j;
+			// @ts-ignore
+			state_array[j] ^= P[byte_index];
+		}
+		console.log("keccak-p input");
+		keccak_p(state_array, scratch_space, 24);
+	}
+	const Z = new Uint8Array(d / 8);
+	let output_index = 0;
+	let state_array_index = 0;
+	while (output_index < d / 8) {
+		// @ts-ignore
+		Z[output_index] = state_array[state_array_index];
+		output_index++;
+		state_array_index++;
+		if (state_array_index % (r / 8) === 0) {
+			state_array_index = 0;
+			console.log("keccak-p output");
+			keccak_p(state_array, scratch_space, 24);
+		}
+	}
+	return Z;
 }
 
 export { keccak };
