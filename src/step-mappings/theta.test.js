@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { b2h } from "../b2h.js";
+import { remove_whitespace } from "../format.js";
+import { h2b } from "../h2b.js";
 import {
 	fill_state_array_with_byte,
 	get_bit_in_state_array,
@@ -58,4 +61,46 @@ test("All one", (_t) => {
 			}
 		}
 	}
+});
+
+test("NIST test 1", (_t) => {
+	const hex_before_raw = `
+                06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 00
+        `;
+	const hex_after_raw = `
+                07 00 00 00 00 00 00 00 06 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+                0C 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
+                06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80
+                00 00 00 00 00 00 00 00 0C 00 00 00 00 00 00 00
+                01 00 00 00 00 00 00 00 06 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+                0C 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
+                06 00 00 00 00 00 00 80 00 00 00 00 00 00 00 80
+                00 00 00 00 00 00 00 00 0C 00 00 00 00 00 00 00
+                01 00 00 00 00 00 00 00 06 00 00 00 00 00 00 00
+                00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+                0C 00 00 00 00 00 00 00
+        `;
+	const hex_before = remove_whitespace(hex_before_raw);
+	const hex_after = remove_whitespace(hex_after_raw);
+	const state_array = h2b(hex_before);
+	const scratch_space = make_state_array();
+	do_theta(state_array, scratch_space);
+	const hex_result = b2h(state_array);
+	assert.equal(hex_result.length, 400);
+	assert.equal(hex_after.length, 400);
+	assert.equal(hex_result, hex_after);
 });

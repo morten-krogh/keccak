@@ -8,14 +8,20 @@ test("b2h enpty", (_t) => {
 	assert.equal(h, "");
 });
 
-test("b2h doble", (_t) => {
-	const b = new Uint8Array([163, 46]);
+test("b2h single zero", (_t) => {
+	const b = new Uint8Array([0]);
 	const h = b2h(b);
-	assert.equal(h, "A32E");
+	assert.equal(h, "00");
 });
 
 test("b2h single", (_t) => {
 	const b = new Uint8Array([171]);
 	const h = b2h(b);
 	assert.equal(h, "AB");
+});
+
+test("b2h double", (_t) => {
+	const b = new Uint8Array([163, 46]);
+	const h = b2h(b);
+	assert.equal(h, "A32E");
 });

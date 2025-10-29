@@ -6,7 +6,7 @@
 function b2h(b) {
 	let h = "";
 	for (const byte of b) {
-		const doublet = byte.toString(16);
+		const doublet = byte.toString(16).padStart(2, "0");
 		h += doublet;
 	}
 	return h.toUpperCase();

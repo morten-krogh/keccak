@@ -34,7 +34,6 @@ function get_bit_in_state_array(state_array, x, y, z) {
 	const bit_offset = bit_index % 8;
 	const byte = /** @type {number} */ (state_array[byte_index]);
 	const bit = (byte >> bit_offset) & 1;
-	// console.log({ bit_index, byte_index, bit_offset, byte, bit });
 	return bit !== 0;
 }
 

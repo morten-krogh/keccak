@@ -25,15 +25,6 @@ function keccak(c, N, m, d) {
 	const r = 1600 - c;
 	const P = pad(N, m, r);
 	const n = (8 * P.length) / r;
-	console.log({ n });
-	console.log(P);
-	for (let i = 0; i < P.length; i++) {
-		const byte = P[i];
-		if (byte !== 0) {
-			console.log({ i, byte });
-		}
-	}
-
 	const state_array = make_state_array();
 	const scratch_space = make_state_array();
 	for (let i = 0; i < n; i++) {
@@ -44,7 +35,6 @@ function keccak(c, N, m, d) {
 			// @ts-ignore
 			state_array[j] ^= P[byte_index];
 		}
-		console.log("keccak-p input");
 		keccak_p(state_array, scratch_space, 24);
 	}
 	const Z = new Uint8Array(d / 8);
@@ -57,7 +47,6 @@ function keccak(c, N, m, d) {
 		state_array_index++;
 		if (state_array_index % (r / 8) === 0) {
 			state_array_index = 0;
-			console.log("keccak-p output");
 			keccak_p(state_array, scratch_space, 24);
 		}
 	}
