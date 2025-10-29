@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { remove_whitespace } from "./format.js";
 import { h2b } from "./h2b.js";
 import { hex_get_bit } from "./hex.js";
 import {
@@ -120,7 +121,7 @@ test("test vector", (_t) => {
                 79 97 36 51 92 7C 0B 14 5E EB BD AA A7 43 73 85
                 E5 70 7B FB 0E 6E 13 92
         `;
-	const hex = hex_readable.replaceAll(/\s/g, "");
+	const hex = remove_whitespace(hex_readable);
 	const state_array = h2b(hex);
 	// [0, 0] = 66d71ebff8c6ffa7
 	const expected_hex_0_0 = "66d71ebff8c6ffa7";
