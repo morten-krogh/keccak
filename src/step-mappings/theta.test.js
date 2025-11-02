@@ -119,8 +119,7 @@ test("NIST test 2", (_t) => {
                 A0 24 1B 3D 40 7B 08 8F 18 8B 11 20 C1 84 69 70
                 5D F5 5B 30 B4 53 26 92 0E A4 00 12 09 E0 18 BD
                 58 80 53 80 B1 1F 3E 02 C7 35 00 32 24 B4 00 1F
-                08 A0 38 80 08 18 18 20
-`;
+                08 A0 38 80 08 18 18 20`;
 	const hex_after_raw = `
                 37 A1 26 21 7D F4 34 7B 04 66 62 1B 4B 91 AB BB
                 E0 DE 3A 77 43 32 CE 88 9C 0F A6 F0 16 DA F8 86
@@ -134,8 +133,7 @@ test("NIST test 2", (_t) => {
                 5A 2B F9 C1 4D 94 FD 4D B0 72 7D C6 4E 56 9F EF
                 94 CC BA 10 F9 31 32 FD 1E C4 04 00 69 50 3D A4
                 BE 00 C8 EC F2 97 D1 9D 3D 3A E2 CE 29 5B F5 DD
-                A0 59 54 66 87 CA EE BF
-`;
+                A0 59 54 66 87 CA EE BF`;
 	const hex_before = remove_whitespace(hex_before_raw);
 	const hex_after = remove_whitespace(hex_after_raw);
 	const state_array = h2b(hex_before);

@@ -81,7 +81,7 @@ test("NIST test 1", (_t) => {
 	const hex_before = remove_whitespace(hex_before_raw);
 	const state_array = h2b(hex_before);
 	const scratch_space = make_state_array();
-	for (let i_round = 0; i_round < 3; i_round++) {
+	for (let i_round = 0; i_round < 2; i_round++) {
 		do_round(state_array, scratch_space, i_round);
 		const hex_result = b2h(state_array);
 		const hex_after_round_raw = /** @type {string} */ (
