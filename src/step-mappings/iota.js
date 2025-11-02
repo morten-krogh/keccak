@@ -307,7 +307,7 @@ const rc = [
 function do_iota(A, i_round) {
 	let two_to_the_power_j = 1;
 	let k = 7 * i_round;
-	for (let j = 0; j < 6; j++) {
+	for (let j = 0; j < 7; j++) {
 		const current_rc = /** @type {boolean} */ (rc[k]);
 		const z = two_to_the_power_j - 1;
 		add_bit_in_state_array(A, 0, 0, z, current_rc);
