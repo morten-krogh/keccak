@@ -1,6 +1,11 @@
 const DATA_OFFSET = 200;
 const STATE_BYTES = 200;
 const SHA3_SUFFIX = 0x06;
+const HEX_ALPHABET = "0123456789abcdef";
+
+/**
+ * @typedef {"hex" | "bytes"} DigestFormat
+ */
 
 /**
  * @typedef {{
@@ -250,4 +255,94 @@ function createHash(algorithm) {
 	return new Hash(algorithm);
 }
 
-export { Hash, createHash, initHash };
+/**
+ * @param {string | Uint8Array} message
+ * @returns {Uint8Array}
+ */
+function message_to_bytes(message) {
+	if (typeof message === "string") {
+		return new TextEncoder().encode(message);
+	}
+	if (message instanceof Uint8Array) {
+		return message;
+	}
+	throw new TypeError('The "message" argument must be a string or Uint8Array');
+}
+
+/**
+ * @param {Uint8Array} bytes
+ * @returns {string}
+ */
+function bytes_to_hex(bytes) {
+	let hex = "";
+	for (const byte of bytes) {
+		hex += HEX_ALPHABET[byte >> 4] ?? "";
+		hex += HEX_ALPHABET[byte & 0x0f] ?? "";
+	}
+	return hex;
+}
+
+/**
+ * @param {Uint8Array} digest
+ * @param {DigestFormat} digest_format
+ * @returns {string | Uint8Array}
+ */
+function format_digest(digest, digest_format) {
+	if (digest_format === "hex") {
+		return bytes_to_hex(digest);
+	}
+	if (digest_format === "bytes") {
+		return digest;
+	}
+	throw new TypeError('The "digest_format" argument must be "hex" or "bytes"');
+}
+
+/**
+ * @param {string} algorithm
+ * @param {string | Uint8Array} message
+ * @param {DigestFormat} [digest_format]
+ * @returns {string | Uint8Array}
+ */
+function sha3_digest(algorithm, message, digest_format = "hex") {
+	const bytes = message_to_bytes(message);
+	const digest = createHash(algorithm).update(bytes).digest();
+	return format_digest(digest, digest_format);
+}
+
+/**
+ * @param {string | Uint8Array} message
+ * @param {DigestFormat} [digest_format]
+ * @returns {string | Uint8Array}
+ */
+function sha3_224(message, digest_format = "hex") {
+	return sha3_digest("sha3-224", message, digest_format);
+}
+
+/**
+ * @param {string | Uint8Array} message
+ * @param {DigestFormat} [digest_format]
+ * @returns {string | Uint8Array}
+ */
+function sha3_256(message, digest_format = "hex") {
+	return sha3_digest("sha3-256", message, digest_format);
+}
+
+/**
+ * @param {string | Uint8Array} message
+ * @param {DigestFormat} [digest_format]
+ * @returns {string | Uint8Array}
+ */
+function sha3_384(message, digest_format = "hex") {
+	return sha3_digest("sha3-384", message, digest_format);
+}
+
+/**
+ * @param {string | Uint8Array} message
+ * @param {DigestFormat} [digest_format]
+ * @returns {string | Uint8Array}
+ */
+function sha3_512(message, digest_format = "hex") {
+	return sha3_digest("sha3-512", message, digest_format);
+}
+
+export { Hash, createHash, initHash, sha3_224, sha3_256, sha3_384, sha3_512 };

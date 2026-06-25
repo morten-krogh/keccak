@@ -3,9 +3,23 @@ import { Buffer } from "node:buffer";
 import { createHash as createNodeHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { createHash, Hash, initHash } from "./hash.js";
+import {
+	createHash,
+	Hash,
+	initHash,
+	sha3_224,
+	sha3_256,
+	sha3_384,
+	sha3_512,
+} from "./sha3.js";
 
 const ALGORITHMS = ["sha3-224", "sha3-256", "sha3-384", "sha3-512"];
+const ONE_SHOT_ALGORITHMS = [
+	{ algorithm: "sha3-224", fn: sha3_224 },
+	{ algorithm: "sha3-256", fn: sha3_256 },
+	{ algorithm: "sha3-384", fn: sha3_384 },
+	{ algorithm: "sha3-512", fn: sha3_512 },
+];
 const text_encoder = new TextEncoder();
 
 const wasm_bytes = await readFile(
@@ -29,8 +43,21 @@ function node_hash_bytes(algorithm, chunks) {
 	return new Uint8Array(hash.digest());
 }
 
-test("hash.js has no Node-only imports or Buffer dependency", async (_t) => {
-	const source = await readFile(new URL("./hash.js", import.meta.url), "utf8");
+/**
+ * @param {string} algorithm
+ * @param {readonly Uint8Array[]} chunks
+ * @returns {string}
+ */
+function node_hash_hex(algorithm, chunks) {
+	const hash = createNodeHash(algorithm);
+	for (const chunk of chunks) {
+		hash.update(chunk);
+	}
+	return hash.digest("hex");
+}
+
+test("sha3.js has no Node-only imports or Buffer dependency", async (_t) => {
+	const source = await readFile(new URL("./sha3.js", import.meta.url), "utf8");
 	assert(!source.includes("node:"));
 	assert(!/\bBuffer\b/.test(source));
 	assert(!source.includes("Transform"));
@@ -38,7 +65,7 @@ test("hash.js has no Node-only imports or Buffer dependency", async (_t) => {
 });
 
 test("createHash throws before initHash has initialized a module", async (_t) => {
-	const fresh = await import(`./hash.js?uninitialized=${Date.now()}`);
+	const fresh = await import(`./sha3.js?uninitialized=${Date.now()}`);
 	assert.throws(() => fresh.createHash("sha3-256"), /not been initialized/);
 });
 
@@ -120,6 +147,46 @@ test("Hash copy clones the current hash state", (_t) => {
 
 	assert.deepEqual(hash.digest(), node_hash_bytes("sha3-256", [a, b]));
 	assert.deepEqual(copy.digest(), node_hash_bytes("sha3-256", [a, c]));
+});
+
+test("one-shot SHA3 helpers return lowercase hex by default", (_t) => {
+	const input = text_encoder.encode("abc");
+	for (const { algorithm, fn } of ONE_SHOT_ALGORITHMS) {
+		assert.equal(fn(input), node_hash_hex(algorithm, [input]));
+	}
+});
+
+test('one-shot SHA3 helpers return Uint8Array for digest_format "bytes"', (_t) => {
+	const input = text_encoder.encode("abc");
+	for (const { algorithm, fn } of ONE_SHOT_ALGORITHMS) {
+		const digest = fn(input, "bytes");
+		const digest_2 = fn(input, "bytes");
+		assert(digest instanceof Uint8Array);
+		assert(digest_2 instanceof Uint8Array);
+		assert(!(digest instanceof Buffer));
+		assert.notEqual(digest, digest_2);
+		assert.deepEqual(digest, node_hash_bytes(algorithm, [input]));
+		assert.deepEqual(digest_2, node_hash_bytes(algorithm, [input]));
+	}
+});
+
+test("one-shot SHA3 helpers encode string messages as UTF-8", (_t) => {
+	const message = "abc ø";
+	const input = text_encoder.encode(message);
+	for (const { algorithm, fn } of ONE_SHOT_ALGORITHMS) {
+		assert.equal(fn(message), node_hash_hex(algorithm, [input]));
+	}
+});
+
+test("one-shot SHA3 helpers validate message and digest format", (_t) => {
+	assert.throws(
+		() => sha3_256(/** @type {never} */ (new DataView(new ArrayBuffer(1)))),
+		TypeError,
+	);
+	assert.throws(
+		() => sha3_256("abc", /** @type {never} */ ("base64")),
+		TypeError,
+	);
 });
 
 test("Hash throws clear errors for unsupported, non-Uint8Array, and finalized usage", (_t) => {
