@@ -1044,11 +1044,10 @@
 		local.get $lane_4_4
 		i64.store offset=192
 	)
-	(func $absorb (param $c i32) (param $m i32) (param $should_pad i32)
+	(func $absorb (param $c i32) (param $m i32)
 		(local $rate i32)
 		(local $offset i32)
 		(local $i i32)
-		(local $remainder i32)
 		local.get $c
 		i32.const 200
 		i32.ge_u
@@ -1065,17 +1064,13 @@
 		local.get $c
 		i32.sub
 		local.set $rate
-		local.get $should_pad
-		i32.eqz
+		local.get $m
+		local.get $rate
+		i32.rem_u
+		i32.const 0
+		i32.ne
 		if
-			local.get $m
-			local.get $rate
-			i32.rem_u
-			i32.const 0
-			i32.ne
-			if
-				unreachable
-			end
+			unreachable
 		end
 		i32.const 0
 		local.set $offset
@@ -1120,56 +1115,6 @@
 				local.set $offset
 				br $full_loop
 			end
-		end
-		local.get $should_pad
-		if
-			local.get $m
-			local.get $offset
-			i32.sub
-			local.set $remainder
-			i32.const 0
-			local.set $i
-			block $remainder_xor_done
-				loop $remainder_xor_loop
-					local.get $i
-					local.get $remainder
-					i32.ge_u
-					br_if $remainder_xor_done
-					local.get $i
-					local.get $i
-					i32.load8_u
-					i32.const 200
-					local.get $offset
-					i32.add
-					local.get $i
-					i32.add
-					i32.load8_u
-					i32.xor
-					i32.store8
-					local.get $i
-					i32.const 1
-					i32.add
-					local.set $i
-					br $remainder_xor_loop
-				end
-			end
-			local.get $remainder
-			local.get $remainder
-			i32.load8_u
-			i32.const 1
-			i32.xor
-			i32.store8
-			local.get $rate
-			i32.const 1
-			i32.sub
-			local.get $rate
-			i32.const 1
-			i32.sub
-			i32.load8_u
-			i32.const 128
-			i32.xor
-			i32.store8
-			call $keccak_p
 		end
 	)
 	(func $squeeze (param $c i32) (param $d i32)
