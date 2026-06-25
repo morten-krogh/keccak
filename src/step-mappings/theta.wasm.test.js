@@ -20,11 +20,11 @@ const theta_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_theta(state_array) {
 	const { exports } = await WebAssembly.instantiate(theta_wasm_module);
 	const theta_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_theta: () => void }} */ (
+		/** @type {{ memory: WebAssembly.Memory, do_theta: () => void }} */ (
 			exports
 		);
-	const memory = new Uint8Array(theta_exports.memory_state.buffer, 0, 200);
-	theta_exports.reset_state();
+	const memory = new Uint8Array(theta_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	theta_exports.do_theta();
 	return new Uint8Array(memory);

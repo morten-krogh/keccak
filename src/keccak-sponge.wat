@@ -1,5 +1,5 @@
 (module
-	(memory $memory 1)
+	(memory $memory 16)
 	(func $keccak_p
 		(local $lane_0_0 i64)
 		(local $lane_1_0 i64)
@@ -1044,6 +1044,213 @@
 		local.get $lane_4_4
 		i64.store offset=192
 	)
+	(func $absorb (param $c i32) (param $m i32) (param $should_pad i32)
+		(local $rate i32)
+		(local $offset i32)
+		(local $i i32)
+		(local $remainder i32)
+		local.get $c
+		i32.const 200
+		i32.ge_u
+		if
+			unreachable
+		end
+		local.get $m
+		i32.const 1048376
+		i32.gt_u
+		if
+			unreachable
+		end
+		i32.const 200
+		local.get $c
+		i32.sub
+		local.set $rate
+		local.get $should_pad
+		i32.eqz
+		if
+			local.get $m
+			local.get $rate
+			i32.rem_u
+			i32.const 0
+			i32.ne
+			if
+				unreachable
+			end
+		end
+		i32.const 0
+		local.set $offset
+		block $full_done
+			loop $full_loop
+				local.get $offset
+				local.get $rate
+				i32.add
+				local.get $m
+				i32.gt_u
+				br_if $full_done
+				i32.const 0
+				local.set $i
+				block $block_xor_done
+					loop $block_xor_loop
+						local.get $i
+						local.get $rate
+						i32.ge_u
+						br_if $block_xor_done
+						local.get $i
+						local.get $i
+						i32.load8_u
+						i32.const 200
+						local.get $offset
+						i32.add
+						local.get $i
+						i32.add
+						i32.load8_u
+						i32.xor
+						i32.store8
+						local.get $i
+						i32.const 1
+						i32.add
+						local.set $i
+						br $block_xor_loop
+					end
+				end
+				call $keccak_p
+				local.get $offset
+				local.get $rate
+				i32.add
+				local.set $offset
+				br $full_loop
+			end
+		end
+		local.get $should_pad
+		if
+			local.get $m
+			local.get $offset
+			i32.sub
+			local.set $remainder
+			i32.const 0
+			local.set $i
+			block $remainder_xor_done
+				loop $remainder_xor_loop
+					local.get $i
+					local.get $remainder
+					i32.ge_u
+					br_if $remainder_xor_done
+					local.get $i
+					local.get $i
+					i32.load8_u
+					i32.const 200
+					local.get $offset
+					i32.add
+					local.get $i
+					i32.add
+					i32.load8_u
+					i32.xor
+					i32.store8
+					local.get $i
+					i32.const 1
+					i32.add
+					local.set $i
+					br $remainder_xor_loop
+				end
+			end
+			local.get $remainder
+			local.get $remainder
+			i32.load8_u
+			i32.const 1
+			i32.xor
+			i32.store8
+			local.get $rate
+			i32.const 1
+			i32.sub
+			local.get $rate
+			i32.const 1
+			i32.sub
+			i32.load8_u
+			i32.const 128
+			i32.xor
+			i32.store8
+			call $keccak_p
+		end
+	)
+	(func $squeeze (param $c i32) (param $d i32)
+		(local $rate i32)
+		(local $output_offset i32)
+		(local $i i32)
+		(local $chunk i32)
+		local.get $c
+		i32.const 200
+		i32.ge_u
+		if
+			unreachable
+		end
+		local.get $d
+		i32.const 1048376
+		i32.gt_u
+		if
+			unreachable
+		end
+		i32.const 200
+		local.get $c
+		i32.sub
+		local.set $rate
+		i32.const 0
+		local.set $output_offset
+		block $squeeze_done
+			loop $squeeze_loop
+				local.get $output_offset
+				local.get $d
+				i32.ge_u
+				br_if $squeeze_done
+				local.get $d
+				local.get $output_offset
+				i32.sub
+				local.set $chunk
+				local.get $chunk
+				local.get $rate
+				i32.gt_u
+				if
+					local.get $rate
+					local.set $chunk
+				end
+				i32.const 0
+				local.set $i
+				block $copy_done
+					loop $copy_loop
+						local.get $i
+						local.get $chunk
+						i32.ge_u
+						br_if $copy_done
+						i32.const 200
+						local.get $output_offset
+						i32.add
+						local.get $i
+						i32.add
+						local.get $i
+						i32.load8_u
+						i32.store8
+						local.get $i
+						i32.const 1
+						i32.add
+						local.set $i
+						br $copy_loop
+					end
+				end
+				local.get $output_offset
+				local.get $chunk
+				i32.add
+				local.set $output_offset
+				local.get $output_offset
+				local.get $d
+				i32.lt_u
+				if
+					call $keccak_p
+				end
+				br $squeeze_loop
+			end
+		end
+	)
 	(export "memory" (memory $memory))
 	(export "keccak_p" (func $keccak_p))
+	(export "absorb" (func $absorb))
+	(export "squeeze" (func $squeeze))
 )

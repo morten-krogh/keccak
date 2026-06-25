@@ -23,11 +23,11 @@ const iota_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_iota(state_array, i_round) {
 	const { exports } = await WebAssembly.instantiate(iota_wasm_module);
 	const iota_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_iota: (i_round: number) => void }} */ (
+		/** @type {{ memory: WebAssembly.Memory, do_iota: (i_round: number) => void }} */ (
 			exports
 		);
-	const memory = new Uint8Array(iota_exports.memory_state.buffer, 0, 200);
-	iota_exports.reset_state();
+	const memory = new Uint8Array(iota_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	iota_exports.do_iota(i_round);
 	return new Uint8Array(memory);

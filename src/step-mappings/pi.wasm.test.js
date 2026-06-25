@@ -22,11 +22,9 @@ const pi_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_pi(state_array) {
 	const { exports } = await WebAssembly.instantiate(pi_wasm_module);
 	const pi_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_pi: () => void }} */ (
-			exports
-		);
-	const memory = new Uint8Array(pi_exports.memory_state.buffer, 0, 200);
-	pi_exports.reset_state();
+		/** @type {{ memory: WebAssembly.Memory, do_pi: () => void }} */ (exports);
+	const memory = new Uint8Array(pi_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	pi_exports.do_pi();
 	return new Uint8Array(memory);

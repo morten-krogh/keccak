@@ -22,11 +22,9 @@ const chi_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_chi(state_array) {
 	const { exports } = await WebAssembly.instantiate(chi_wasm_module);
 	const chi_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_chi: () => void }} */ (
-			exports
-		);
-	const memory = new Uint8Array(chi_exports.memory_state.buffer, 0, 200);
-	chi_exports.reset_state();
+		/** @type {{ memory: WebAssembly.Memory, do_chi: () => void }} */ (exports);
+	const memory = new Uint8Array(chi_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	chi_exports.do_chi();
 	return new Uint8Array(memory);

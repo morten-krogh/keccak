@@ -16,11 +16,11 @@ const round_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_round(state_array, i_round) {
 	const { exports } = await WebAssembly.instantiate(round_wasm_module);
 	const round_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_round: (i_round: number) => void }} */ (
+		/** @type {{ memory: WebAssembly.Memory, do_round: (i_round: number) => void }} */ (
 			exports
 		);
-	const memory = new Uint8Array(round_exports.memory_state.buffer, 0, 200);
-	round_exports.reset_state();
+	const memory = new Uint8Array(round_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	round_exports.do_round(i_round);
 	return new Uint8Array(memory);
@@ -33,11 +33,11 @@ async function run_wasm_round(state_array, i_round) {
 async function run_wasm_permutation(state_array) {
 	const { exports } = await WebAssembly.instantiate(round_wasm_module);
 	const round_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, do_round: (i_round: number) => void }} */ (
+		/** @type {{ memory: WebAssembly.Memory, do_round: (i_round: number) => void }} */ (
 			exports
 		);
-	const memory = new Uint8Array(round_exports.memory_state.buffer, 0, 200);
-	round_exports.reset_state();
+	const memory = new Uint8Array(round_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	for (let round = 0; round < 24; round++) {
 		round_exports.do_round(round);

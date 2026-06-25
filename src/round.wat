@@ -1,11 +1,5 @@
 (module
-	(memory $mem_state 1)
-	(func $reset_state
-		i32.const 0
-		i32.const 0
-		i32.const 200
-		memory.fill
-	)
+	(memory $memory 1)
 	(func $do_round (param $i_round i32)
 		(local $lane_0_0 i64)
 		(local $lane_1_0 i64)
@@ -1029,7 +1023,6 @@
 		local.get $lane_4_4
 		i64.store offset=192
 	)
-	(export "memory_state" (memory $mem_state))
-	(export "reset_state" (func $reset_state))
+	(export "memory" (memory $memory))
 	(export "do_round" (func $do_round))
 )

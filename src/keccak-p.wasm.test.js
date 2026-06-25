@@ -16,11 +16,11 @@ const keccak_p_wasm_module = await WebAssembly.compile(wasm_bytes);
 async function run_wasm_keccak_p(state_array) {
 	const { exports } = await WebAssembly.instantiate(keccak_p_wasm_module);
 	const keccak_p_exports =
-		/** @type {{ memory_state: WebAssembly.Memory, reset_state: () => void, keccak_p: () => void }} */ (
+		/** @type {{ memory: WebAssembly.Memory, keccak_p: () => void }} */ (
 			exports
 		);
-	const memory = new Uint8Array(keccak_p_exports.memory_state.buffer, 0, 200);
-	keccak_p_exports.reset_state();
+	const memory = new Uint8Array(keccak_p_exports.memory.buffer, 0, 200);
+	memory.fill(0);
 	memory.set(state_array);
 	keccak_p_exports.keccak_p();
 	return new Uint8Array(memory);
