@@ -122,6 +122,24 @@ const SPONGE_CASES = Object.freeze([
 			"aefd9f0c85a612c0d95acc41f593cf3308f7189051644d020aa6be7c27a370d8" +
 			"f23f7561fb4bb7f5",
 	},
+	{
+		name: "shake128 1600-bit padded input",
+		cBytes: 32,
+		inputHex: `${"a3".repeat(200)}1f${"00".repeat(134)}80`,
+		dBytes: 64,
+		expectedHex:
+			"131ab8d2b594946b9c81333f9bb6e0ce75c3b93104fa3469d3917457385da037" +
+			"cf232ef7164a6d1eb448c8908186ad852d3f85a5cf28da1ab6fe343817197846",
+	},
+	{
+		name: "shake256 1600-bit padded input",
+		cBytes: 64,
+		inputHex: `${"a3".repeat(200)}1f${"00".repeat(70)}80`,
+		dBytes: 64,
+		expectedHex:
+			"cd8a920ed141aa0407a22d59288652e9d9f1a7ee0c1e7c1ca699424da84a904d" +
+			"2d700caae7396ece96604440577da4f3aa22aeb8857f961c4cd8e06f0ae6610b",
+	},
 ]);
 
 test("WASM keccak sponge memory is at least 1MiB", async (_t) => {
