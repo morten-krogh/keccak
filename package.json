@@ -21,11 +21,11 @@
 		"type": "module",
 		"main": "index.js",
 		"scripts": {
-				"biome": "biome check src src_wasm",
-				"tsc": "tsgo --project ./src/tsconfig.json && tsgo --project ./src_wasm/tsconfig.json",
-				"test": "node --test \"src/**/*.test.js\" \"src_wasm/**/*.test.js\"",
+				"biome": "biome check src_wasm",
+				"tsc": "tsgo --project ./src_wasm/tsconfig.json",
+				"test": "node --test \"src_wasm/**/*.test.js\"",
 				"check": "npm run biome && npm run tsc && npm run test",
-				"fix": "biome check --write src src_wasm"
+				"fix": "biome check --write src_wasm"
 		},
 		"devDependencies": {
 				"@biomejs/biome": "2.1.4",

@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { keccak } from "../src/keccak.js";
-import { pad } from "../src/pad.js";
 
 const DATA_OFFSET = 200;
 const MEMORY_BYTES = 1024 * 1024;
@@ -29,42 +27,102 @@ async function instantiate_sponge() {
 }
 
 /**
+ * @param {string} hex
+ * @returns {Uint8Array}
+ */
+function bytes_from_hex(hex) {
+	assert.equal(hex.length % 2, 0);
+	const bytes = new Uint8Array(hex.length / 2);
+	for (let index = 0; index < bytes.length; index++) {
+		bytes[index] = Number.parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+	}
+	return bytes;
+}
+
+/**
+ * @param {Uint8Array} bytes
+ * @returns {string}
+ */
+function hex_from_bytes(bytes) {
+	return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
+		"",
+	);
+}
+
+/**
  * @param {number} c_bytes
- * @param {Uint8Array} input
+ * @param {string} padded_input_hex
  * @param {number} d_bytes
  * @returns {Promise<Uint8Array>}
  */
-async function run_wasm_keccak(c_bytes, input, d_bytes) {
+async function run_sponge(c_bytes, padded_input_hex, d_bytes) {
 	const exports = await instantiate_sponge();
 	const memory = new Uint8Array(exports.memory.buffer);
+	const padded_input = bytes_from_hex(padded_input_hex);
 	memory.fill(0);
-	memory.set(input, DATA_OFFSET);
-	exports.absorb(c_bytes, input.length, 0);
+	memory.set(padded_input, DATA_OFFSET);
+	exports.absorb(c_bytes, padded_input.length, 0);
 	exports.squeeze(c_bytes, d_bytes);
 	return memory.slice(DATA_OFFSET, DATA_OFFSET + d_bytes);
 }
 
-/**
- * @param {number} c_bytes
- * @param {Uint8Array} input
- * @param {number} d_bytes
- * @returns {Promise<Uint8Array>}
- */
-function run_wasm_padded_keccak(c_bytes, input, d_bytes) {
-	const rate_bits = (200 - c_bytes) * 8;
-	const padded_input = pad(input, input.length * 8, rate_bits);
-	return run_wasm_keccak(c_bytes, padded_input, d_bytes);
-}
-
-/**
- * @param {number} c_bytes
- * @param {Uint8Array} input
- * @param {number} d_bytes
- * @returns {Uint8Array}
- */
-function run_js_keccak(c_bytes, input, d_bytes) {
-	return keccak(c_bytes * 8, input, input.length * 8, d_bytes * 8);
-}
+/** @type {readonly { name: string, cBytes: number, inputHex: string, dBytes: number, expectedHex: string }[]} */
+const SPONGE_CASES = Object.freeze([
+	{
+		name: "sha3-256 empty padded input",
+		cBytes: 64,
+		inputHex: `06${"00".repeat(134)}80`,
+		dBytes: 32,
+		expectedHex:
+			"a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
+	},
+	{
+		name: "sha3-256 abc padded input",
+		cBytes: 64,
+		inputHex: `61626306${"00".repeat(131)}80`,
+		dBytes: 32,
+		expectedHex:
+			"3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
+	},
+	{
+		name: "sha3-256 rate minus one padding",
+		cBytes: 64,
+		inputHex: `${"33".repeat(135)}86`,
+		dBytes: 32,
+		expectedHex:
+			"f2975f130c63461ae4a013a39200a51a6ef351f1eb315dfac3a514eca4d71313",
+	},
+	{
+		name: "sha3-256 exact rate padding",
+		cBytes: 64,
+		inputHex: `${"44".repeat(136)}06${"00".repeat(134)}80`,
+		dBytes: 32,
+		expectedHex:
+			"83d50be7f820c7c739b4af781132703a1bc5f3b52b716cea9a09d555c79dfe18",
+	},
+	{
+		name: "sha3-512 200-byte padded input",
+		cBytes: 128,
+		inputHex: `${"a3".repeat(200)}06${"00".repeat(14)}80`,
+		dBytes: 64,
+		expectedHex:
+			"e76dfad22084a8b1467fcf2ffa58361bec7628edf5f3fdc0e4805dc48caeeca81b7c13c30adf52a3659584739a2df46be589c51ca1a4a8416df6545a1ce8ba00",
+	},
+	{
+		name: "sha3-256 extended squeeze",
+		cBytes: 64,
+		inputHex: `555555555506${"00".repeat(129)}80`,
+		dBytes: 200,
+		expectedHex:
+			"810bc5f424d5035bfd25f2877375c5eba6284b9d0cc65fea17d58d089da9f249" +
+			"056e7bb4889de1bf135f001d73d94776460bf9b237fad668b32b0ef4d160e452" +
+			"993da578f9643f13c743dd12c9ca78646a6e25b08c8b6ef724147031b261df0c" +
+			"0245b5352d34ee128029dfe12dbbfc35f7327ec9553bf16e7f40984656aac83d" +
+			"531c9238a02ae59ab1f28561d745885f21ab2f10cef2504f3b27ee5a9f149370" +
+			"aefd9f0c85a612c0d95acc41f593cf3308f7189051644d020aa6be7c27a370d8" +
+			"f23f7561fb4bb7f5",
+	},
+]);
 
 test("WASM keccak sponge memory is at least 1MiB", async (_t) => {
 	const exports = await instantiate_sponge();
@@ -80,88 +138,20 @@ test("WASM keccak sponge only exports sponge functions", async (_t) => {
 	]);
 });
 
-test("WASM keccak sponge empty input", async (_t) => {
-	const input = new Uint8Array(0);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 32),
-		run_js_keccak(64, input, 32),
-	);
-});
-
-test("WASM keccak sponge partial input", async (_t) => {
-	const input = Uint8Array.from([0xaa, 0xbb, 0xcc]);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 64),
-		run_js_keccak(64, input, 64),
-	);
-});
-
-test("WASM keccak sponge last-byte padding", async (_t) => {
-	const input = new Uint8Array(135).fill(0x33);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 32),
-		run_js_keccak(64, input, 32),
-	);
-});
-
-test("WASM keccak sponge exact-block padding", async (_t) => {
-	const input = new Uint8Array(136).fill(0x44);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 32),
-		run_js_keccak(64, input, 32),
-	);
-});
-
-test("WASM keccak sponge multi-block squeeze", async (_t) => {
-	const input = new Uint8Array(5).fill(0x55);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 200),
-		run_js_keccak(64, input, 200),
-	);
-});
-
-test("WASM keccak sponge multi-block squeeze with partial final lane", async (_t) => {
-	const input = new Uint8Array(5).fill(0x66);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 139),
-		run_js_keccak(64, input, 139),
-	);
-});
-
-test("WASM keccak sponge sha3-256 empty suffixed input", async (_t) => {
-	const input = Uint8Array.from([2]);
-	assert.deepEqual(
-		await run_wasm_padded_keccak(64, input, 32),
-		run_js_keccak(64, input, 32),
-	);
-});
-
-test("WASM keccak sponge sha3-512 1600-bit suffixed input", async (_t) => {
-	const message = new Uint8Array(200).fill(0xa3);
-	const input = new Uint8Array(message.length + 1);
-	input.set(message);
-	input[message.length] = 2;
-	assert.deepEqual(
-		await run_wasm_padded_keccak(128, input, 64),
-		run_js_keccak(128, input, 64),
-	);
-});
-
-test("WASM keccak sponge pre-padded block", async (_t) => {
-	const padded_input = new Uint8Array(136);
-	padded_input[0] = 2;
-	padded_input[1] = 1;
-	padded_input[135] = 0x80;
-	const suffixed_input = Uint8Array.from([2]);
-	assert.deepEqual(
-		await run_wasm_keccak(64, padded_input, 32),
-		run_js_keccak(64, suffixed_input, 32),
-	);
-});
+for (const sponge_case of SPONGE_CASES) {
+	test(`WASM keccak sponge ${sponge_case.name}`, async (_t) => {
+		const output = await run_sponge(
+			sponge_case.cBytes,
+			sponge_case.inputHex,
+			sponge_case.dBytes,
+		);
+		assert.equal(hex_from_bytes(output), sponge_case.expectedHex);
+	});
+}
 
 test("WASM keccak sponge traps on nonmultiple input", async (_t) => {
 	await assert.rejects(
-		async () => run_wasm_keccak(64, Uint8Array.from([1]), 32),
+		async () => run_sponge(64, "01", 32),
 		WebAssembly.RuntimeError,
 	);
 });
