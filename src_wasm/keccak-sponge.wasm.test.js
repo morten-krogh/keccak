@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const DATA_OFFSET = 200;
+const DATA_OFFSET = 392;
+const STATE_BYTES = 200;
 const MEMORY_BYTES = 1024 * 1024;
 
 const wasm_bytes = await readFile(
@@ -59,7 +60,7 @@ async function run_sponge(c_bytes, padded_input_hex, d_bytes) {
 	const exports = await instantiate_sponge();
 	const memory = new Uint8Array(exports.memory.buffer);
 	const padded_input = bytes_from_hex(padded_input_hex);
-	memory.fill(0);
+	memory.fill(0, 0, STATE_BYTES);
 	memory.set(padded_input, DATA_OFFSET);
 	exports.absorb(c_bytes, padded_input.length, 0);
 	exports.squeeze(c_bytes, d_bytes);

@@ -1,4 +1,4 @@
-const DATA_OFFSET = 200;
+const DATA_OFFSET = 392;
 const STATE_BYTES = 200;
 const SHA3_SUFFIX = 0x06;
 

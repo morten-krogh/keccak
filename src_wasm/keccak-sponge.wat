@@ -1,5 +1,6 @@
 (module
 	(memory $memory 16)
+	(data (i32.const 200) "\01\00\00\00\00\00\00\00\82\80\00\00\00\00\00\00\8a\80\00\00\00\00\00\80\00\80\00\80\00\00\00\80\8b\80\00\00\00\00\00\00\01\00\00\80\00\00\00\00\81\80\00\80\00\00\00\80\09\80\00\00\00\00\00\80\8a\00\00\00\00\00\00\00\88\00\00\00\00\00\00\00\09\80\00\80\00\00\00\00\0a\00\00\80\00\00\00\00\8b\80\00\80\00\00\00\00\8b\00\00\00\00\00\00\80\89\80\00\00\00\00\00\80\03\80\00\00\00\00\00\80\02\80\00\00\00\00\00\80\80\00\00\00\00\00\00\80\0a\80\00\00\00\00\00\00\0a\00\00\80\00\00\00\80\81\80\00\80\00\00\00\80\80\80\00\00\00\00\00\80\01\00\00\80\00\00\00\00\08\80\00\80\00\00\00\80")
 	(func $absorb (param $c i32) (param $m i32) (param $use_zero_instead_of_memory_for_input i32)
 		(local $rate i32)
 		(local $offset i32)
@@ -63,7 +64,6 @@
 		(local $d_2 i64)
 		(local $d_3 i64)
 		(local $d_4 i64)
-		(local $round_constant i64)
 		(local $i_round i32)
 		local.get $c
 		i32.const 200
@@ -72,7 +72,7 @@
 			unreachable
 		end
 		local.get $m
-		i32.const 1048376
+		i32.const 1048184
 		i32.gt_u
 		if
 			unreachable
@@ -189,7 +189,7 @@
 				i32.ge_u
 				if
 					local.get $lane_0_0
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=0
@@ -201,7 +201,7 @@
 				i32.ge_u
 				if
 					local.get $lane_1_0
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=8
@@ -213,7 +213,7 @@
 				i32.ge_u
 				if
 					local.get $lane_2_0
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=16
@@ -225,7 +225,7 @@
 				i32.ge_u
 				if
 					local.get $lane_3_0
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=24
@@ -237,7 +237,7 @@
 				i32.ge_u
 				if
 					local.get $lane_4_0
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=32
@@ -249,7 +249,7 @@
 				i32.ge_u
 				if
 					local.get $lane_0_1
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=40
@@ -261,7 +261,7 @@
 				i32.ge_u
 				if
 					local.get $lane_1_1
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=48
@@ -273,7 +273,7 @@
 				i32.ge_u
 				if
 					local.get $lane_2_1
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=56
@@ -285,7 +285,7 @@
 				i32.ge_u
 				if
 					local.get $lane_3_1
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=64
@@ -297,7 +297,7 @@
 				i32.ge_u
 				if
 					local.get $lane_4_1
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=72
@@ -309,7 +309,7 @@
 				i32.ge_u
 				if
 					local.get $lane_0_2
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=80
@@ -321,7 +321,7 @@
 				i32.ge_u
 				if
 					local.get $lane_1_2
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=88
@@ -333,7 +333,7 @@
 				i32.ge_u
 				if
 					local.get $lane_2_2
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=96
@@ -345,7 +345,7 @@
 				i32.ge_u
 				if
 					local.get $lane_3_2
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=104
@@ -357,7 +357,7 @@
 				i32.ge_u
 				if
 					local.get $lane_4_2
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=112
@@ -369,7 +369,7 @@
 				i32.ge_u
 				if
 					local.get $lane_0_3
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=120
@@ -381,7 +381,7 @@
 				i32.ge_u
 				if
 					local.get $lane_1_3
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=128
@@ -393,7 +393,7 @@
 				i32.ge_u
 				if
 					local.get $lane_2_3
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=136
@@ -405,7 +405,7 @@
 				i32.ge_u
 				if
 					local.get $lane_3_3
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=144
@@ -417,7 +417,7 @@
 				i32.ge_u
 				if
 					local.get $lane_4_3
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=152
@@ -429,7 +429,7 @@
 				i32.ge_u
 				if
 					local.get $lane_0_4
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=160
@@ -441,7 +441,7 @@
 				i32.ge_u
 				if
 					local.get $lane_1_4
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=168
@@ -453,7 +453,7 @@
 				i32.ge_u
 				if
 					local.get $lane_2_4
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=176
@@ -465,7 +465,7 @@
 				i32.ge_u
 				if
 					local.get $lane_3_4
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=184
@@ -477,7 +477,7 @@
 				i32.ge_u
 				if
 					local.get $lane_4_4
-					i32.const 200
+					i32.const 392
 					local.get $offset
 					i32.add
 					i64.load offset=192
@@ -678,254 +678,103 @@
 						i64.xor
 						local.set $lane_4_4
 
-						local.get $lane_1_0
-						i64.const 1
-						i64.rotl
-						local.set $lane_1_0
-						local.get $lane_2_0
-						i64.const 62
-						i64.rotl
-						local.set $lane_2_0
-						local.get $lane_3_0
-						i64.const 28
-						i64.rotl
-						local.set $lane_3_0
-						local.get $lane_4_0
-						i64.const 27
-						i64.rotl
-						local.set $lane_4_0
-						local.get $lane_0_1
-						i64.const 36
-						i64.rotl
-						local.set $lane_0_1
+						local.get $lane_0_0
+						local.set $old_lane_0_0
 						local.get $lane_1_1
 						i64.const 44
 						i64.rotl
-						local.set $lane_1_1
-						local.get $lane_2_1
-						i64.const 6
-						i64.rotl
-						local.set $lane_2_1
-						local.get $lane_3_1
-						i64.const 55
-						i64.rotl
-						local.set $lane_3_1
-						local.get $lane_4_1
-						i64.const 20
-						i64.rotl
-						local.set $lane_4_1
-						local.get $lane_0_2
-						i64.const 3
-						i64.rotl
-						local.set $lane_0_2
-						local.get $lane_1_2
-						i64.const 10
-						i64.rotl
-						local.set $lane_1_2
+						local.set $old_lane_1_0
 						local.get $lane_2_2
 						i64.const 43
 						i64.rotl
-						local.set $lane_2_2
-						local.get $lane_3_2
-						i64.const 25
-						i64.rotl
-						local.set $lane_3_2
-						local.get $lane_4_2
-						i64.const 39
-						i64.rotl
-						local.set $lane_4_2
-						local.get $lane_0_3
-						i64.const 41
-						i64.rotl
-						local.set $lane_0_3
-						local.get $lane_1_3
-						i64.const 45
-						i64.rotl
-						local.set $lane_1_3
-						local.get $lane_2_3
-						i64.const 15
-						i64.rotl
-						local.set $lane_2_3
+						local.set $old_lane_2_0
 						local.get $lane_3_3
 						i64.const 21
 						i64.rotl
-						local.set $lane_3_3
-						local.get $lane_4_3
-						i64.const 8
-						i64.rotl
-						local.set $lane_4_3
-						local.get $lane_0_4
-						i64.const 18
-						i64.rotl
-						local.set $lane_0_4
-						local.get $lane_1_4
-						i64.const 2
-						i64.rotl
-						local.set $lane_1_4
-						local.get $lane_2_4
-						i64.const 61
-						i64.rotl
-						local.set $lane_2_4
-						local.get $lane_3_4
-						i64.const 56
-						i64.rotl
-						local.set $lane_3_4
+						local.set $old_lane_3_0
 						local.get $lane_4_4
 						i64.const 14
 						i64.rotl
-						local.set $lane_4_4
-
-						local.get $lane_0_0
-						local.set $old_lane_0_0
-						local.get $lane_1_0
-						local.set $old_lane_1_0
-						local.get $lane_2_0
-						local.set $old_lane_2_0
-						local.get $lane_3_0
-						local.set $old_lane_3_0
-						local.get $lane_4_0
 						local.set $old_lane_4_0
-						local.get $lane_0_1
-						local.set $old_lane_0_1
-						local.get $lane_1_1
-						local.set $old_lane_1_1
-						local.get $lane_2_1
-						local.set $old_lane_2_1
-						local.get $lane_3_1
-						local.set $old_lane_3_1
-						local.get $lane_4_1
-						local.set $old_lane_4_1
-						local.get $lane_0_2
-						local.set $old_lane_0_2
-						local.get $lane_1_2
-						local.set $old_lane_1_2
-						local.get $lane_2_2
-						local.set $old_lane_2_2
-						local.get $lane_3_2
-						local.set $old_lane_3_2
-						local.get $lane_4_2
-						local.set $old_lane_4_2
-						local.get $lane_0_3
-						local.set $old_lane_0_3
-						local.get $lane_1_3
-						local.set $old_lane_1_3
-						local.get $lane_2_3
-						local.set $old_lane_2_3
-						local.get $lane_3_3
-						local.set $old_lane_3_3
-						local.get $lane_4_3
-						local.set $old_lane_4_3
-						local.get $lane_0_4
-						local.set $old_lane_0_4
-						local.get $lane_1_4
-						local.set $old_lane_1_4
-						local.get $lane_2_4
-						local.set $old_lane_2_4
-						local.get $lane_3_4
-						local.set $old_lane_3_4
-						local.get $lane_4_4
-						local.set $old_lane_4_4
-
-						local.get $old_lane_0_0
-						local.set $lane_0_0
-						local.get $old_lane_1_1
-						local.set $lane_1_0
-						local.get $old_lane_2_2
-						local.set $lane_2_0
-						local.get $old_lane_3_3
-						local.set $lane_3_0
-						local.get $old_lane_4_4
-						local.set $lane_4_0
-						local.get $old_lane_3_0
-						local.set $lane_0_1
-						local.get $old_lane_4_1
-						local.set $lane_1_1
-						local.get $old_lane_0_2
-						local.set $lane_2_1
-						local.get $old_lane_1_3
-						local.set $lane_3_1
-						local.get $old_lane_2_4
-						local.set $lane_4_1
-						local.get $old_lane_1_0
-						local.set $lane_0_2
-						local.get $old_lane_2_1
-						local.set $lane_1_2
-						local.get $old_lane_3_2
-						local.set $lane_2_2
-						local.get $old_lane_4_3
-						local.set $lane_3_2
-						local.get $old_lane_0_4
-						local.set $lane_4_2
-						local.get $old_lane_4_0
-						local.set $lane_0_3
-						local.get $old_lane_0_1
-						local.set $lane_1_3
-						local.get $old_lane_1_2
-						local.set $lane_2_3
-						local.get $old_lane_2_3
-						local.set $lane_3_3
-						local.get $old_lane_3_4
-						local.set $lane_4_3
-						local.get $old_lane_2_0
-						local.set $lane_0_4
-						local.get $old_lane_3_1
-						local.set $lane_1_4
-						local.get $old_lane_4_2
-						local.set $lane_2_4
-						local.get $old_lane_0_3
-						local.set $lane_3_4
-						local.get $old_lane_1_4
-						local.set $lane_4_4
-
-						local.get $lane_0_0
-						local.set $old_lane_0_0
-						local.get $lane_1_0
-						local.set $old_lane_1_0
-						local.get $lane_2_0
-						local.set $old_lane_2_0
 						local.get $lane_3_0
-						local.set $old_lane_3_0
-						local.get $lane_4_0
-						local.set $old_lane_4_0
-						local.get $lane_0_1
+						i64.const 28
+						i64.rotl
 						local.set $old_lane_0_1
-						local.get $lane_1_1
-						local.set $old_lane_1_1
-						local.get $lane_2_1
-						local.set $old_lane_2_1
-						local.get $lane_3_1
-						local.set $old_lane_3_1
 						local.get $lane_4_1
-						local.set $old_lane_4_1
+						i64.const 20
+						i64.rotl
+						local.set $old_lane_1_1
 						local.get $lane_0_2
-						local.set $old_lane_0_2
-						local.get $lane_1_2
-						local.set $old_lane_1_2
-						local.get $lane_2_2
-						local.set $old_lane_2_2
-						local.get $lane_3_2
-						local.set $old_lane_3_2
-						local.get $lane_4_2
-						local.set $old_lane_4_2
-						local.get $lane_0_3
-						local.set $old_lane_0_3
+						i64.const 3
+						i64.rotl
+						local.set $old_lane_2_1
 						local.get $lane_1_3
-						local.set $old_lane_1_3
-						local.get $lane_2_3
-						local.set $old_lane_2_3
-						local.get $lane_3_3
-						local.set $old_lane_3_3
-						local.get $lane_4_3
-						local.set $old_lane_4_3
-						local.get $lane_0_4
-						local.set $old_lane_0_4
-						local.get $lane_1_4
-						local.set $old_lane_1_4
+						i64.const 45
+						i64.rotl
+						local.set $old_lane_3_1
 						local.get $lane_2_4
-						local.set $old_lane_2_4
+						i64.const 61
+						i64.rotl
+						local.set $old_lane_4_1
+						local.get $lane_1_0
+						i64.const 1
+						i64.rotl
+						local.set $old_lane_0_2
+						local.get $lane_2_1
+						i64.const 6
+						i64.rotl
+						local.set $old_lane_1_2
+						local.get $lane_3_2
+						i64.const 25
+						i64.rotl
+						local.set $old_lane_2_2
+						local.get $lane_4_3
+						i64.const 8
+						i64.rotl
+						local.set $old_lane_3_2
+						local.get $lane_0_4
+						i64.const 18
+						i64.rotl
+						local.set $old_lane_4_2
+						local.get $lane_4_0
+						i64.const 27
+						i64.rotl
+						local.set $old_lane_0_3
+						local.get $lane_0_1
+						i64.const 36
+						i64.rotl
+						local.set $old_lane_1_3
+						local.get $lane_1_2
+						i64.const 10
+						i64.rotl
+						local.set $old_lane_2_3
+						local.get $lane_2_3
+						i64.const 15
+						i64.rotl
+						local.set $old_lane_3_3
 						local.get $lane_3_4
+						i64.const 56
+						i64.rotl
+						local.set $old_lane_4_3
+						local.get $lane_2_0
+						i64.const 62
+						i64.rotl
+						local.set $old_lane_0_4
+						local.get $lane_3_1
+						i64.const 55
+						i64.rotl
+						local.set $old_lane_1_4
+						local.get $lane_4_2
+						i64.const 39
+						i64.rotl
+						local.set $old_lane_2_4
+						local.get $lane_0_3
+						i64.const 41
+						i64.rotl
 						local.set $old_lane_3_4
-						local.get $lane_4_4
+						local.get $lane_1_4
+						i64.const 2
+						i64.rotl
 						local.set $old_lane_4_4
 
 						local.get $old_lane_0_0
@@ -1129,179 +978,11 @@
 						i64.xor
 						local.set $lane_4_4
 
-						i64.const 0
-						local.set $round_constant
-						local.get $i_round
-						i32.const 0
-						i32.eq
-						if
-							i64.const 0x0000000000000001
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 1
-						i32.eq
-						if
-							i64.const 0x0000000000008082
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 2
-						i32.eq
-						if
-							i64.const 0x800000000000808a
-							local.set $round_constant
-						end
+						local.get $lane_0_0
 						local.get $i_round
 						i32.const 3
-						i32.eq
-						if
-							i64.const 0x8000000080008000
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 4
-						i32.eq
-						if
-							i64.const 0x000000000000808b
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 5
-						i32.eq
-						if
-							i64.const 0x0000000080000001
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 6
-						i32.eq
-						if
-							i64.const 0x8000000080008081
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 7
-						i32.eq
-						if
-							i64.const 0x8000000000008009
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 8
-						i32.eq
-						if
-							i64.const 0x000000000000008a
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 9
-						i32.eq
-						if
-							i64.const 0x0000000000000088
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 10
-						i32.eq
-						if
-							i64.const 0x0000000080008009
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 11
-						i32.eq
-						if
-							i64.const 0x000000008000000a
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 12
-						i32.eq
-						if
-							i64.const 0x000000008000808b
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 13
-						i32.eq
-						if
-							i64.const 0x800000000000008b
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 14
-						i32.eq
-						if
-							i64.const 0x8000000000008089
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 15
-						i32.eq
-						if
-							i64.const 0x8000000000008003
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 16
-						i32.eq
-						if
-							i64.const 0x8000000000008002
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 17
-						i32.eq
-						if
-							i64.const 0x8000000000000080
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 18
-						i32.eq
-						if
-							i64.const 0x000000000000800a
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 19
-						i32.eq
-						if
-							i64.const 0x800000008000000a
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 20
-						i32.eq
-						if
-							i64.const 0x8000000080008081
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 21
-						i32.eq
-						if
-							i64.const 0x8000000000008080
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 22
-						i32.eq
-						if
-							i64.const 0x0000000080000001
-							local.set $round_constant
-						end
-						local.get $i_round
-						i32.const 23
-						i32.eq
-						if
-							i64.const 0x8000000080008008
-							local.set $round_constant
-						end
-
-						local.get $lane_0_0
-						local.get $round_constant
+						i32.shl
+						i64.load offset=200
 						i64.xor
 						local.set $lane_0_0
 
@@ -1407,7 +1088,7 @@
 			unreachable
 		end
 		local.get $d
-		i32.const 1048376
+		i32.const 1048184
 		i32.gt_u
 		if
 			unreachable
@@ -1451,7 +1132,7 @@
 						local.get $chunk
 						i32.ge_u
 						br_if $copy_done
-						i32.const 200
+						i32.const 392
 						local.get $output_offset
 						i32.add
 						local.get $i
