@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { keccak } from "./keccak.js";
-import { pad } from "./pad.js";
+import { keccak } from "../src/keccak.js";
+import { pad } from "../src/pad.js";
 
 const DATA_OFFSET = 200;
 const MEMORY_BYTES = 1024 * 1024;
@@ -15,8 +15,7 @@ const keccak_sponge_wasm_module = await WebAssembly.compile(wasm_bytes);
 /**
  * @typedef {{
  *   memory: WebAssembly.Memory,
- *   keccak_p: () => void,
- *   absorb: (c: number, m: number) => void,
+ *   absorb: (c: number, m: number, useZeroInsteadOfMemoryForInput: number) => void,
  *   squeeze: (c: number, d: number) => void,
  * }} KeccakSpongeExports
  */
@@ -40,7 +39,7 @@ async function run_wasm_keccak(c_bytes, input, d_bytes) {
 	const memory = new Uint8Array(exports.memory.buffer);
 	memory.fill(0);
 	memory.set(input, DATA_OFFSET);
-	exports.absorb(c_bytes, input.length);
+	exports.absorb(c_bytes, input.length, 0);
 	exports.squeeze(c_bytes, d_bytes);
 	return memory.slice(DATA_OFFSET, DATA_OFFSET + d_bytes);
 }
@@ -70,6 +69,15 @@ function run_js_keccak(c_bytes, input, d_bytes) {
 test("WASM keccak sponge memory is at least 1MiB", async (_t) => {
 	const exports = await instantiate_sponge();
 	assert(exports.memory.buffer.byteLength >= MEMORY_BYTES);
+});
+
+test("WASM keccak sponge only exports sponge functions", async (_t) => {
+	const exports = await instantiate_sponge();
+	assert.deepEqual(Object.keys(exports).sort(), [
+		"absorb",
+		"memory",
+		"squeeze",
+	]);
 });
 
 test("WASM keccak sponge empty input", async (_t) => {
@@ -109,6 +117,14 @@ test("WASM keccak sponge multi-block squeeze", async (_t) => {
 	assert.deepEqual(
 		await run_wasm_padded_keccak(64, input, 200),
 		run_js_keccak(64, input, 200),
+	);
+});
+
+test("WASM keccak sponge multi-block squeeze with partial final lane", async (_t) => {
+	const input = new Uint8Array(5).fill(0x66);
+	assert.deepEqual(
+		await run_wasm_padded_keccak(64, input, 139),
+		run_js_keccak(64, input, 139),
 	);
 });
 
@@ -153,7 +169,7 @@ test("WASM keccak sponge traps on nonmultiple input", async (_t) => {
 test("WASM keccak sponge traps on absorb overflow", async (_t) => {
 	const exports = await instantiate_sponge();
 	await assert.rejects(
-		async () => exports.absorb(64, MEMORY_BYTES - DATA_OFFSET + 1),
+		async () => exports.absorb(64, MEMORY_BYTES - DATA_OFFSET + 1, 0),
 		WebAssembly.RuntimeError,
 	);
 });
@@ -162,6 +178,22 @@ test("WASM keccak sponge traps on squeeze overflow", async (_t) => {
 	const exports = await instantiate_sponge();
 	await assert.rejects(
 		async () => exports.squeeze(64, MEMORY_BYTES - DATA_OFFSET + 1),
+		WebAssembly.RuntimeError,
+	);
+});
+
+test("WASM keccak sponge traps on non-8-byte absorb rate", async (_t) => {
+	const exports = await instantiate_sponge();
+	await assert.rejects(
+		async () => exports.absorb(63, 0, 0),
+		WebAssembly.RuntimeError,
+	);
+});
+
+test("WASM keccak sponge traps on non-8-byte squeeze rate", async (_t) => {
+	const exports = await instantiate_sponge();
+	await assert.rejects(
+		async () => exports.squeeze(63, 1),
 		WebAssembly.RuntimeError,
 	);
 });

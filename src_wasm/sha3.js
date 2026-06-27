@@ -1,11 +1,6 @@
 const DATA_OFFSET = 200;
 const STATE_BYTES = 200;
 const SHA3_SUFFIX = 0x06;
-const HEX_ALPHABET = "0123456789abcdef";
-
-/**
- * @typedef {"hex" | "bytes"} DigestFormat
- */
 
 /**
  * @typedef {{
@@ -19,10 +14,13 @@ const HEX_ALPHABET = "0123456789abcdef";
 /**
  * @typedef {{
  *   memory: WebAssembly.Memory,
- *   keccak_p: () => void,
- *   absorb: (c: number, m: number) => void,
+ *   absorb: (c: number, m: number, useZeroInsteadOfMemoryForInput: number) => void,
  *   squeeze: (c: number, d: number) => void,
  * }} SpongeExports
+ */
+
+/**
+ * @typedef {string | URL | Request | WebAssembly.Module} WasmSource
  */
 
 /** @type {ReadonlyMap<string, AlgorithmConfig>} */
@@ -45,24 +43,6 @@ const ALGORITHMS = new Map([
 	],
 ]);
 
-/** @type {WebAssembly.Module | null} */
-let wasm_module = null;
-
-/**
- * @param {string | URL | Request} wasmUrl
- * @returns {Promise<void>}
- */
-async function initHash(
-	wasmUrl = new URL("./keccak-sponge.wasm", import.meta.url),
-) {
-	const response = await fetch(wasmUrl);
-	if (!response.ok) {
-		throw new Error(`Failed to fetch WASM module: ${response.status}`);
-	}
-	const wasm_bytes = await response.arrayBuffer();
-	wasm_module = await WebAssembly.compile(wasm_bytes);
-}
-
 /**
  * @param {string} algorithm
  * @returns {AlgorithmConfig}
@@ -79,20 +59,12 @@ function get_algorithm_config(algorithm) {
 	return config;
 }
 
-/**
- * @returns {SpongeExports}
- */
-function instantiate_sponge() {
-	if (!wasm_module) {
-		throw new Error("Hash WASM module has not been initialized");
-	}
-	const { exports } = new WebAssembly.Instance(wasm_module);
-	return /** @type {SpongeExports} */ (exports);
-}
-
 class Hash {
 	/** @type {string} */
 	algorithm;
+
+	/** @type {WebAssembly.Instance} */
+	#wasmInstance;
 
 	/** @type {AlgorithmConfig} */
 	#config;
@@ -116,12 +88,14 @@ class Hash {
 	#finalDigest = null;
 
 	/**
-	 * @param {string} algorithm
+	 * @param {WebAssembly.Instance} wasm_instance
+	 * @param {AlgorithmConfig} config
 	 */
-	constructor(algorithm) {
-		this.#config = get_algorithm_config(algorithm);
+	constructor(wasm_instance, config) {
+		this.#wasmInstance = wasm_instance;
+		this.#config = config;
 		this.algorithm = this.#config.name;
-		this.#sponge = instantiate_sponge();
+		this.#sponge = /** @type {SpongeExports} */ (wasm_instance.exports);
 		this.#memory = new Uint8Array(this.#sponge.memory.buffer);
 		this.#state = new Uint8Array(STATE_BYTES);
 		this.#pending = new Uint8Array(this.#config.rateBytes);
@@ -165,7 +139,7 @@ class Hash {
 				"Hash copy failed because digest() has already been called",
 			);
 		}
-		const hash = new Hash(this.#config.name);
+		const hash = new Hash(this.#wasmInstance, this.#config);
 		hash.#state.set(this.#state);
 		hash.#pending.set(this.#pending.subarray(0, this.#pendingLength));
 		hash.#pendingLength = this.#pendingLength;
@@ -218,7 +192,7 @@ class Hash {
 			const chunk = bytes.subarray(offset, offset + maxBytes);
 			this.#memory.set(this.#state, 0);
 			this.#memory.set(chunk, DATA_OFFSET);
-			this.#sponge.absorb(this.#config.capacityBytes, chunk.length);
+			this.#sponge.absorb(this.#config.capacityBytes, chunk.length, 0);
 			this.#state.set(this.#memory.subarray(0, STATE_BYTES));
 		}
 	}
@@ -247,102 +221,35 @@ class Hash {
 	}
 }
 
-/**
- * @param {string} algorithm
- * @returns {Hash}
- */
-function createHash(algorithm) {
-	return new Hash(algorithm);
-}
+class Sha3 {
+	/** @type {WebAssembly.Instance | null} */
+	#wasm_instance = null;
 
-/**
- * @param {string | Uint8Array} message
- * @returns {Uint8Array}
- */
-function message_to_bytes(message) {
-	if (typeof message === "string") {
-		return new TextEncoder().encode(message);
+	/**
+	 * @param {WasmSource} wasm_source
+	 * @returns {Promise<this>}
+	 */
+	async initialize(wasm_source) {
+		if (wasm_source instanceof WebAssembly.Module) {
+			this.#wasm_instance = await WebAssembly.instantiate(wasm_source);
+			return this;
+		}
+		const result = await WebAssembly.instantiateStreaming(fetch(wasm_source));
+		this.#wasm_instance = result.instance;
+		return this;
 	}
-	if (message instanceof Uint8Array) {
-		return message;
+
+	/**
+	 * @param {string} algorithm
+	 * @returns {Hash}
+	 */
+	createHash(algorithm) {
+		if (!this.#wasm_instance) {
+			throw new Error("Sha3 WASM instance has not been initialized");
+		}
+		const config = get_algorithm_config(algorithm);
+		return new Hash(this.#wasm_instance, config);
 	}
-	throw new TypeError('The "message" argument must be a string or Uint8Array');
 }
 
-/**
- * @param {Uint8Array} bytes
- * @returns {string}
- */
-function bytes_to_hex(bytes) {
-	let hex = "";
-	for (const byte of bytes) {
-		hex += HEX_ALPHABET[byte >> 4] ?? "";
-		hex += HEX_ALPHABET[byte & 0x0f] ?? "";
-	}
-	return hex;
-}
-
-/**
- * @param {Uint8Array} digest
- * @param {DigestFormat} digest_format
- * @returns {string | Uint8Array}
- */
-function format_digest(digest, digest_format) {
-	if (digest_format === "hex") {
-		return bytes_to_hex(digest);
-	}
-	if (digest_format === "bytes") {
-		return digest;
-	}
-	throw new TypeError('The "digest_format" argument must be "hex" or "bytes"');
-}
-
-/**
- * @param {string} algorithm
- * @param {string | Uint8Array} message
- * @param {DigestFormat} [digest_format]
- * @returns {string | Uint8Array}
- */
-function sha3_digest(algorithm, message, digest_format = "hex") {
-	const bytes = message_to_bytes(message);
-	const digest = createHash(algorithm).update(bytes).digest();
-	return format_digest(digest, digest_format);
-}
-
-/**
- * @param {string | Uint8Array} message
- * @param {DigestFormat} [digest_format]
- * @returns {string | Uint8Array}
- */
-function sha3_224(message, digest_format = "hex") {
-	return sha3_digest("sha3-224", message, digest_format);
-}
-
-/**
- * @param {string | Uint8Array} message
- * @param {DigestFormat} [digest_format]
- * @returns {string | Uint8Array}
- */
-function sha3_256(message, digest_format = "hex") {
-	return sha3_digest("sha3-256", message, digest_format);
-}
-
-/**
- * @param {string | Uint8Array} message
- * @param {DigestFormat} [digest_format]
- * @returns {string | Uint8Array}
- */
-function sha3_384(message, digest_format = "hex") {
-	return sha3_digest("sha3-384", message, digest_format);
-}
-
-/**
- * @param {string | Uint8Array} message
- * @param {DigestFormat} [digest_format]
- * @returns {string | Uint8Array}
- */
-function sha3_512(message, digest_format = "hex") {
-	return sha3_digest("sha3-512", message, digest_format);
-}
-
-export { Hash, createHash, initHash, sha3_224, sha3_256, sha3_384, sha3_512 };
+export { Sha3 };

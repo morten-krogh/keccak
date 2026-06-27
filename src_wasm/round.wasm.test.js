@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { h2b } from "./h2b.js";
+import { h2b } from "../src/h2b.js";
 import { sha3_256_0_vectors_by_id } from "./test-vectors/sha3-256_0.js";
 import { sha3_512_1600_vectors_by_id } from "./test-vectors/sha3-512_1600.js";
 

@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { h2b } from "../h2b.js";
+import { h2b } from "../../src/h2b.js";
 import {
 	fill_state_array_with_byte,
 	make_state_array,
 	set_bit_in_state_array,
-} from "../state-array.js";
+} from "../../src/state-array.js";
 import { sha3_256_0_vectors_by_id } from "../test-vectors/sha3-256_0.js";
 import { sha3_512_1600_vectors_by_id } from "../test-vectors/sha3-512_1600.js";
 
