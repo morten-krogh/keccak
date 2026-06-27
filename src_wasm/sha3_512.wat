@@ -320,199 +320,148 @@
 						local.get $lane_0_0
 						local.get $d_0
 						i64.xor
-						local.set $lane_0_0
-						local.get $lane_1_0
-						local.get $d_1
-						i64.xor
-						local.set $lane_1_0
-						local.get $lane_2_0
-						local.get $d_2
-						i64.xor
-						local.set $lane_2_0
-						local.get $lane_3_0
-						local.get $d_3
-						i64.xor
-						local.set $lane_3_0
-						local.get $lane_4_0
-						local.get $d_4
-						i64.xor
-						local.set $lane_4_0
-						local.get $lane_0_1
-						local.get $d_0
-						i64.xor
-						local.set $lane_0_1
-						local.get $lane_1_1
-						local.get $d_1
-						i64.xor
-						local.set $lane_1_1
-						local.get $lane_2_1
-						local.get $d_2
-						i64.xor
-						local.set $lane_2_1
-						local.get $lane_3_1
-						local.get $d_3
-						i64.xor
-						local.set $lane_3_1
-						local.get $lane_4_1
-						local.get $d_4
-						i64.xor
-						local.set $lane_4_1
-						local.get $lane_0_2
-						local.get $d_0
-						i64.xor
-						local.set $lane_0_2
-						local.get $lane_1_2
-						local.get $d_1
-						i64.xor
-						local.set $lane_1_2
-						local.get $lane_2_2
-						local.get $d_2
-						i64.xor
-						local.set $lane_2_2
-						local.get $lane_3_2
-						local.get $d_3
-						i64.xor
-						local.set $lane_3_2
-						local.get $lane_4_2
-						local.get $d_4
-						i64.xor
-						local.set $lane_4_2
-						local.get $lane_0_3
-						local.get $d_0
-						i64.xor
-						local.set $lane_0_3
-						local.get $lane_1_3
-						local.get $d_1
-						i64.xor
-						local.set $lane_1_3
-						local.get $lane_2_3
-						local.get $d_2
-						i64.xor
-						local.set $lane_2_3
-						local.get $lane_3_3
-						local.get $d_3
-						i64.xor
-						local.set $lane_3_3
-						local.get $lane_4_3
-						local.get $d_4
-						i64.xor
-						local.set $lane_4_3
-						local.get $lane_0_4
-						local.get $d_0
-						i64.xor
-						local.set $lane_0_4
-						local.get $lane_1_4
-						local.get $d_1
-						i64.xor
-						local.set $lane_1_4
-						local.get $lane_2_4
-						local.get $d_2
-						i64.xor
-						local.set $lane_2_4
-						local.get $lane_3_4
-						local.get $d_3
-						i64.xor
-						local.set $lane_3_4
-						local.get $lane_4_4
-						local.get $d_4
-						i64.xor
-						local.set $lane_4_4
-
-						local.get $lane_0_0
 						local.set $old_lane_0_0
 						local.get $lane_1_1
+						local.get $d_1
+						i64.xor
 						i64.const 44
 						i64.rotl
 						local.set $old_lane_1_0
 						local.get $lane_2_2
+						local.get $d_2
+						i64.xor
 						i64.const 43
 						i64.rotl
 						local.set $old_lane_2_0
 						local.get $lane_3_3
+						local.get $d_3
+						i64.xor
 						i64.const 21
 						i64.rotl
 						local.set $old_lane_3_0
 						local.get $lane_4_4
+						local.get $d_4
+						i64.xor
 						i64.const 14
 						i64.rotl
 						local.set $old_lane_4_0
 						local.get $lane_3_0
+						local.get $d_3
+						i64.xor
 						i64.const 28
 						i64.rotl
 						local.set $old_lane_0_1
 						local.get $lane_4_1
+						local.get $d_4
+						i64.xor
 						i64.const 20
 						i64.rotl
 						local.set $old_lane_1_1
 						local.get $lane_0_2
+						local.get $d_0
+						i64.xor
 						i64.const 3
 						i64.rotl
 						local.set $old_lane_2_1
 						local.get $lane_1_3
+						local.get $d_1
+						i64.xor
 						i64.const 45
 						i64.rotl
 						local.set $old_lane_3_1
 						local.get $lane_2_4
+						local.get $d_2
+						i64.xor
 						i64.const 61
 						i64.rotl
 						local.set $old_lane_4_1
 						local.get $lane_1_0
+						local.get $d_1
+						i64.xor
 						i64.const 1
 						i64.rotl
 						local.set $old_lane_0_2
 						local.get $lane_2_1
+						local.get $d_2
+						i64.xor
 						i64.const 6
 						i64.rotl
 						local.set $old_lane_1_2
 						local.get $lane_3_2
+						local.get $d_3
+						i64.xor
 						i64.const 25
 						i64.rotl
 						local.set $old_lane_2_2
 						local.get $lane_4_3
+						local.get $d_4
+						i64.xor
 						i64.const 8
 						i64.rotl
 						local.set $old_lane_3_2
 						local.get $lane_0_4
+						local.get $d_0
+						i64.xor
 						i64.const 18
 						i64.rotl
 						local.set $old_lane_4_2
 						local.get $lane_4_0
+						local.get $d_4
+						i64.xor
 						i64.const 27
 						i64.rotl
 						local.set $old_lane_0_3
 						local.get $lane_0_1
+						local.get $d_0
+						i64.xor
 						i64.const 36
 						i64.rotl
 						local.set $old_lane_1_3
 						local.get $lane_1_2
+						local.get $d_1
+						i64.xor
 						i64.const 10
 						i64.rotl
 						local.set $old_lane_2_3
 						local.get $lane_2_3
+						local.get $d_2
+						i64.xor
 						i64.const 15
 						i64.rotl
 						local.set $old_lane_3_3
 						local.get $lane_3_4
+						local.get $d_3
+						i64.xor
 						i64.const 56
 						i64.rotl
 						local.set $old_lane_4_3
 						local.get $lane_2_0
+						local.get $d_2
+						i64.xor
 						i64.const 62
 						i64.rotl
 						local.set $old_lane_0_4
 						local.get $lane_3_1
+						local.get $d_3
+						i64.xor
 						i64.const 55
 						i64.rotl
 						local.set $old_lane_1_4
 						local.get $lane_4_2
+						local.get $d_4
+						i64.xor
 						i64.const 39
 						i64.rotl
 						local.set $old_lane_2_4
 						local.get $lane_0_3
+						local.get $d_0
+						i64.xor
 						i64.const 41
 						i64.rotl
 						local.set $old_lane_3_4
 						local.get $lane_1_4
+						local.get $d_1
+						i64.xor
 						i64.const 2
 						i64.rotl
 						local.set $old_lane_4_4
