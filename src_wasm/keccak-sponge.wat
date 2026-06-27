@@ -1079,7 +1079,6 @@
 	(func $squeeze (param $c i32) (param $d i32)
 		(local $rate i32)
 		(local $output_offset i32)
-		(local $i i32)
 		(local $chunk i32)
 		local.get $c
 		i32.const 200
@@ -1124,29 +1123,12 @@
 					local.get $rate
 					local.set $chunk
 				end
+				i32.const 392
+				local.get $output_offset
+				i32.add
 				i32.const 0
-				local.set $i
-				block $copy_done
-					loop $copy_loop
-						local.get $i
-						local.get $chunk
-						i32.ge_u
-						br_if $copy_done
-						i32.const 392
-						local.get $output_offset
-						i32.add
-						local.get $i
-						i32.add
-						local.get $i
-						i32.load8_u
-						i32.store8
-						local.get $i
-						i32.const 1
-						i32.add
-						local.set $i
-						br $copy_loop
-					end
-				end
+				local.get $chunk
+				memory.copy
 				local.get $output_offset
 				local.get $chunk
 				i32.add

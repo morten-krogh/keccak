@@ -201,23 +201,16 @@ class Hash {
 	 * @returns {Uint8Array}
 	 */
 	#finalize() {
-		const finalBlock = new Uint8Array(this.#config.rateBytes);
-		finalBlock.set(this.#pending.subarray(0, this.#pendingLength));
 		const suffixIndex = this.#pendingLength;
-		finalBlock[suffixIndex] = (finalBlock[suffixIndex] ?? 0) | SHA3_SUFFIX;
+		this.#pending.fill(0, suffixIndex);
+		this.#pending[suffixIndex] =
+			(this.#pending[suffixIndex] ?? 0) | SHA3_SUFFIX;
 		const finalIndex = this.#config.rateBytes - 1;
-		finalBlock[finalIndex] = (finalBlock[finalIndex] ?? 0) | 0x80;
-		this.#absorb_blocks(finalBlock);
+		this.#pending[finalIndex] = (this.#pending[finalIndex] ?? 0) | 0x80;
+		this.#absorb_blocks(this.#pending);
 		this.#pendingLength = 0;
 
-		this.#memory.set(this.#state, 0);
-		this.#sponge.squeeze(this.#config.capacityBytes, this.#config.digestBytes);
-		return new Uint8Array(
-			this.#memory.subarray(
-				DATA_OFFSET,
-				DATA_OFFSET + this.#config.digestBytes,
-			),
-		);
+		return new Uint8Array(this.#state.subarray(0, this.#config.digestBytes));
 	}
 }
 
