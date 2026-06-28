@@ -41,7 +41,7 @@ function hex_from_bytes(bytes) {
  */
 function assert_digest_hex(input, expected_hex) {
 	assert.equal(
-		hex_from_bytes(sha3_256.createHash().update(input).digest()),
+		hex_from_bytes(sha3_256.reset().update(input).digest()),
 		expected_hex,
 	);
 }
@@ -62,8 +62,17 @@ test("sha3_256.js only exports Sha3_256", async (_t) => {
 	assert.deepEqual(Object.keys(fresh), ["Sha3_256"]);
 });
 
-test("createHash throws before initialize has initialized a WASM instance", (_t) => {
-	assert.throws(() => new Sha3_256().createHash(), /not been initialized/);
+test("methods throw before initialize has initialized a WASM instance", (_t) => {
+	assert.throws(
+		() => new Sha3_256().update(new Uint8Array()),
+		/not been initialized/,
+	);
+	assert.throws(() => new Sha3_256().digest(), /not been initialized/);
+	assert.throws(() => new Sha3_256().reset(), /not been initialized/);
+});
+
+test("Sha3_256 exposes its algorithm name", (_t) => {
+	assert.equal(sha3_256.algorithm, "sha3-256");
 });
 
 test("Sha3_256 initializes from a precompiled WebAssembly.Module", async (_t) => {
@@ -71,27 +80,23 @@ test("Sha3_256 initializes from a precompiled WebAssembly.Module", async (_t) =>
 	const sha3_256_from_module = await new Sha3_256().initialize(wasm_module);
 	assert.equal(
 		hex_from_bytes(
-			sha3_256_from_module
-				.createHash()
-				.update(text_encoder.encode("abc"))
-				.digest(),
+			sha3_256_from_module.update(text_encoder.encode("abc")).digest(),
 		),
 		SHA3_256_ABC,
 	);
 });
 
-test("createHash creates SHA3-256 Hash instances", (_t) => {
-	const hash = sha3_256.createHash();
-	assert.equal(hash.constructor.name, "Hash");
-	assert.equal(hash.algorithm, "sha3-256");
+test("Sha3_256 hashes abc", (_t) => {
 	assert.equal(
-		hex_from_bytes(hash.update(text_encoder.encode("abc")).digest()),
+		hex_from_bytes(
+			sha3_256.reset().update(text_encoder.encode("abc")).digest(),
+		),
 		SHA3_256_ABC,
 	);
 });
 
-test("Hash matches hard-coded digests for empty and long inputs", (_t) => {
-	assert.equal(hex_from_bytes(sha3_256.createHash().digest()), SHA3_256_EMPTY);
+test("Sha3_256 matches hard-coded digests for empty and long inputs", (_t) => {
+	assert.equal(hex_from_bytes(sha3_256.reset().digest()), SHA3_256_EMPTY);
 
 	const input = new Uint8Array(10_000);
 	for (let i = 0; i < input.length; i++) {
@@ -100,63 +105,101 @@ test("Hash matches hard-coded digests for empty and long inputs", (_t) => {
 	assert_digest_hex(input, SHA3_256_10000_INCREMENTING);
 });
 
-test("Hash supports chunked Uint8Array updates", (_t) => {
+test("update supports chunked Uint8Array updates", (_t) => {
 	const a = text_encoder.encode("a");
 	const b = text_encoder.encode("b");
 	const c = text_encoder.encode("c");
-	const hash = sha3_256.createHash();
+	const hash = sha3_256.reset();
 	assert.equal(hash.update(a), hash);
 	hash.update(b);
 	hash.update(c);
 	assert.equal(hex_from_bytes(hash.digest()), SHA3_256_ABC);
 });
 
-test("Hash accepts Buffer as a Uint8Array subclass in Node", (_t) => {
+test("update accepts Buffer as a Uint8Array subclass in Node", (_t) => {
 	const input = Buffer.from([1, 2, 3, 4]);
 	assert(input instanceof Uint8Array);
 	assert_digest_hex(input, SHA3_256_BYTES_1_2_3_4);
 });
 
-test("Hash digest returns a fresh Uint8Array", (_t) => {
+test("digest returns a fresh Uint8Array", (_t) => {
 	const input = text_encoder.encode("abc");
-	const digest = sha3_256.createHash().update(input).digest();
+	const digest = sha3_256.reset().update(input).digest();
 	assert(digest instanceof Uint8Array);
 	assert(!(digest instanceof Buffer));
 	assert.equal(hex_from_bytes(digest), SHA3_256_ABC);
 });
 
-test("Hash copy clones the current hash state", (_t) => {
+test("reset reuses the instance for a new message", (_t) => {
+	const abc = text_encoder.encode("abc");
+	assert.equal(
+		hex_from_bytes(sha3_256.reset().update(abc).digest()),
+		SHA3_256_ABC,
+	);
+	// Without reset the instance is finalized and refuses further updates.
+	assert.equal(
+		hex_from_bytes(sha3_256.reset().update(abc).digest()),
+		SHA3_256_ABC,
+	);
+});
+
+test("getState/setState fork a shared prefix sequentially", (_t) => {
 	const a = text_encoder.encode("a");
 	const b = text_encoder.encode("b");
 	const c = text_encoder.encode("c");
-	const hash = sha3_256.createHash().update(a);
-	const copy = hash.copy();
-	assert.equal(copy.constructor.name, "Hash");
 
-	hash.update(b);
-	copy.update(c);
+	const hash = sha3_256.reset().update(a);
+	const snapshot = hash.getState();
 
-	assert.equal(hex_from_bytes(hash.digest()), SHA3_256_AB);
-	assert.equal(hex_from_bytes(copy.digest()), SHA3_256_AC);
+	assert.equal(hex_from_bytes(hash.update(b).digest()), SHA3_256_AB);
+
+	hash.setState(snapshot);
+	assert.equal(hex_from_bytes(hash.update(c).digest()), SHA3_256_AC);
 });
 
-test("Hash throws clear errors for non-Uint8Array and finalized usage", (_t) => {
+test("getState snapshot is portable to another instance across a block boundary", async (_t) => {
+	const input = new Uint8Array(10_000);
+	for (let i = 0; i < input.length; i++) {
+		input[i] = i & 0xff;
+	}
+	const head = input.subarray(0, 5000);
+	const tail = input.subarray(5000);
+
+	const snapshot = sha3_256.reset().update(head).getState();
+	const resumed = await new Sha3_256().initialize(wasm_url);
+	assert.equal(
+		hex_from_bytes(resumed.setState(snapshot).update(tail).digest()),
+		SHA3_256_10000_INCREMENTING,
+	);
+});
+
+test("setState rejects malformed snapshots", (_t) => {
+	assert.throws(() => sha3_256.setState(new Uint8Array(8)), TypeError);
 	assert.throws(
-		() => sha3_256.createHash().update(/** @type {never} */ ("abc")),
+		() => sha3_256.setState(/** @type {never} */ ("nope")),
+		TypeError,
+	);
+	const bad = new Uint8Array(400); // 200 state + 1 length + 199 pending
+	bad[200] = 199; // pendingLength >= RATE_BYTES
+	assert.throws(() => sha3_256.setState(bad), /Invalid SHA3-256 state/);
+});
+
+test("update throws clear errors for non-Uint8Array and finalized usage", (_t) => {
+	assert.throws(
+		() => sha3_256.reset().update(/** @type {never} */ ("abc")),
 		TypeError,
 	);
 	assert.throws(
 		() =>
 			sha3_256
-				.createHash()
+				.reset()
 				.update(/** @type {never} */ (new DataView(new ArrayBuffer(1)))),
 		TypeError,
 	);
 
-	const hash = sha3_256.createHash();
+	const hash = sha3_256.reset();
 	hash.update(text_encoder.encode("abc"));
 	hash.digest();
 	assert.throws(() => hash.digest(), /Digest already called/);
 	assert.throws(() => hash.update(new Uint8Array([1])), /digest\(\)/);
-	assert.throws(() => hash.copy(), /digest\(\)/);
 });

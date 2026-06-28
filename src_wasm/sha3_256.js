@@ -15,24 +15,29 @@ const SHA3_SUFFIX = 0x06;
  * @typedef {string | URL | Request | WebAssembly.Module} WasmSource
  */
 
-class Hash {
+/**
+ * SHA3-256 hashing backed by a single WebAssembly instance.
+ *
+ * The sponge state lives directly in the instance's linear memory, so each
+ * `Sha3_256` owns exactly one in-progress hash. Use it for one message at a
+ * time: call {@link Sha3_256#reset} to start a new hash on the same instance, or
+ * {@link Sha3_256#getState}/{@link Sha3_256#setState} to snapshot and resume
+ * (e.g. to fork a shared prefix, sequentially). For hashes that must run
+ * concurrently, create one `Sha3_256` per hash. Not re-entrant; intended for
+ * single-threaded use, as JavaScript is.
+ */
+class Sha3_256 {
 	/** @type {string} */
 	algorithm = "sha3-256";
 
-	/** @type {WebAssembly.Instance} */
-	#wasmInstance;
-
-	/** @type {Sha3_256Exports} */
-	#sponge;
+	/** @type {Sha3_256Exports | null} */
+	#sponge = null;
 
 	/** @type {Uint8Array} */
-	#memory;
+	#memory = new Uint8Array();
 
 	/** @type {Uint8Array} */
-	#state;
-
-	/** @type {Uint8Array} */
-	#pending;
+	#pending = new Uint8Array(RATE_BYTES);
 
 	/** @type {number} */
 	#pendingLength = 0;
@@ -41,14 +46,27 @@ class Hash {
 	#finalDigest = null;
 
 	/**
-	 * @param {WebAssembly.Instance} wasm_instance
+	 * @param {WasmSource} wasm_source
+	 * @returns {Promise<this>}
 	 */
-	constructor(wasm_instance) {
-		this.#wasmInstance = wasm_instance;
-		this.#sponge = /** @type {Sha3_256Exports} */ (wasm_instance.exports);
+	async initialize(wasm_source) {
+		const instance =
+			wasm_source instanceof WebAssembly.Module
+				? await WebAssembly.instantiate(wasm_source)
+				: (await WebAssembly.instantiateStreaming(fetch(wasm_source))).instance;
+		this.#sponge = /** @type {Sha3_256Exports} */ (instance.exports);
 		this.#memory = new Uint8Array(this.#sponge.memory.buffer);
-		this.#state = new Uint8Array(STATE_BYTES);
-		this.#pending = new Uint8Array(RATE_BYTES);
+		return this;
+	}
+
+	/**
+	 * @returns {Sha3_256Exports}
+	 */
+	#ready() {
+		if (!this.#sponge) {
+			throw new Error("Sha3_256 WASM instance has not been initialized");
+		}
+		return this.#sponge;
 	}
 
 	/**
@@ -56,6 +74,7 @@ class Hash {
 	 * @returns {this}
 	 */
 	update(data) {
+		this.#ready();
 		if (this.#finalDigest) {
 			throw new Error(
 				"Hash update failed because digest() has already been called",
@@ -72,6 +91,7 @@ class Hash {
 	 * @returns {Uint8Array}
 	 */
 	digest() {
+		this.#ready();
 		if (this.#finalDigest) {
 			throw new Error("Digest already called");
 		}
@@ -81,19 +101,61 @@ class Hash {
 	}
 
 	/**
-	 * @returns {Hash}
+	 * Clear the sponge state so the same instance can hash a new message.
+	 * @returns {this}
 	 */
-	copy() {
-		if (this.#finalDigest) {
-			throw new Error(
-				"Hash copy failed because digest() has already been called",
-			);
+	reset() {
+		this.#ready();
+		this.#memory.fill(0, 0, STATE_BYTES);
+		this.#pendingLength = 0;
+		this.#finalDigest = null;
+		return this;
+	}
+
+	/**
+	 * Snapshot the in-progress hash (sponge state plus any buffered partial
+	 * block) as an opaque, restorable byte array.
+	 * @returns {Uint8Array}
+	 */
+	getState() {
+		this.#ready();
+		const snapshot = new Uint8Array(STATE_BYTES + 1 + this.#pendingLength);
+		snapshot.set(this.#memory.subarray(0, STATE_BYTES), 0);
+		snapshot[STATE_BYTES] = this.#pendingLength;
+		snapshot.set(
+			this.#pending.subarray(0, this.#pendingLength),
+			STATE_BYTES + 1,
+		);
+		return snapshot;
+	}
+
+	/**
+	 * Restore a snapshot produced by {@link Sha3_256#getState}, replacing the
+	 * current in-progress hash.
+	 * @param {Uint8Array} snapshot
+	 * @returns {this}
+	 */
+	setState(snapshot) {
+		this.#ready();
+		if (
+			!(snapshot instanceof Uint8Array) ||
+			snapshot.length < STATE_BYTES + 1
+		) {
+			throw new TypeError('The "snapshot" argument must be a state Uint8Array');
 		}
-		const hash = new Hash(this.#wasmInstance);
-		hash.#state.set(this.#state);
-		hash.#pending.set(this.#pending.subarray(0, this.#pendingLength));
-		hash.#pendingLength = this.#pendingLength;
-		return hash;
+		const pendingLength = snapshot[STATE_BYTES] ?? 0;
+		if (
+			pendingLength >= RATE_BYTES ||
+			snapshot.length !== STATE_BYTES + 1 + pendingLength
+		) {
+			throw new Error("Invalid SHA3-256 state snapshot");
+		}
+		this.#memory.set(snapshot.subarray(0, STATE_BYTES), 0);
+		this.#pending.fill(0);
+		this.#pending.set(snapshot.subarray(STATE_BYTES + 1));
+		this.#pendingLength = pendingLength;
+		this.#finalDigest = null;
+		return this;
 	}
 
 	/**
@@ -131,17 +193,19 @@ class Hash {
 	}
 
 	/**
+	 * Absorb whole rate blocks. The sponge state stays resident in linear memory
+	 * across calls, so there is no per-call state copy in or out.
 	 * @param {Uint8Array} bytes
 	 */
 	#absorb_blocks(bytes) {
+		const sponge = this.#ready();
+		const memory = this.#memory;
 		const maxBytes =
-			Math.floor((this.#memory.length - DATA_OFFSET) / RATE_BYTES) * RATE_BYTES;
+			Math.floor((memory.length - DATA_OFFSET) / RATE_BYTES) * RATE_BYTES;
 		for (let offset = 0; offset < bytes.length; offset += maxBytes) {
 			const chunk = bytes.subarray(offset, offset + maxBytes);
-			this.#memory.set(this.#state, 0);
-			this.#memory.set(chunk, DATA_OFFSET);
-			this.#sponge.absorb(chunk.length);
-			this.#state.set(this.#memory.subarray(0, STATE_BYTES));
+			memory.set(chunk, DATA_OFFSET);
+			sponge.absorb(chunk.length);
 		}
 	}
 
@@ -158,36 +222,7 @@ class Hash {
 		this.#absorb_blocks(this.#pending);
 		this.#pendingLength = 0;
 
-		return new Uint8Array(this.#state.subarray(0, DIGEST_BYTES));
-	}
-}
-
-class Sha3_256 {
-	/** @type {WebAssembly.Instance | null} */
-	#wasm_instance = null;
-
-	/**
-	 * @param {WasmSource} wasm_source
-	 * @returns {Promise<this>}
-	 */
-	async initialize(wasm_source) {
-		if (wasm_source instanceof WebAssembly.Module) {
-			this.#wasm_instance = await WebAssembly.instantiate(wasm_source);
-			return this;
-		}
-		const result = await WebAssembly.instantiateStreaming(fetch(wasm_source));
-		this.#wasm_instance = result.instance;
-		return this;
-	}
-
-	/**
-	 * @returns {Hash}
-	 */
-	createHash() {
-		if (!this.#wasm_instance) {
-			throw new Error("Sha3_256 WASM instance has not been initialized");
-		}
-		return new Hash(this.#wasm_instance);
+		return this.#memory.slice(0, DIGEST_BYTES);
 	}
 }
 
