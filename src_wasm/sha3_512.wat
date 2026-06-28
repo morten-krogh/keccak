@@ -3,6 +3,7 @@
 	(data (i32.const 200) "\01\00\00\00\00\00\00\00\82\80\00\00\00\00\00\00\8a\80\00\00\00\00\00\80\00\80\00\80\00\00\00\80\8b\80\00\00\00\00\00\00\01\00\00\80\00\00\00\00\81\80\00\80\00\00\00\80\09\80\00\00\00\00\00\80\8a\00\00\00\00\00\00\00\88\00\00\00\00\00\00\00\09\80\00\80\00\00\00\00\0a\00\00\80\00\00\00\00\8b\80\00\80\00\00\00\00\8b\00\00\00\00\00\00\80\89\80\00\00\00\00\00\80\03\80\00\00\00\00\00\80\02\80\00\00\00\00\00\80\80\00\00\00\00\00\00\80\0a\80\00\00\00\00\00\00\0a\00\00\80\00\00\00\80\81\80\00\80\00\00\00\80\80\80\00\00\00\00\00\80\01\00\00\80\00\00\00\00\08\80\00\80\00\00\00\80")
 	(func $absorb (param $m i32)
 		(local $offset i32)
+		(local $data_ptr i32)
 		(local $lane_0_0 i64)
 		(local $lane_1_0 i64)
 		(local $lane_2_0 i64)
@@ -162,66 +163,52 @@
 				local.get $m
 				i32.ge_u
 				br_if $full_done
-				local.get $lane_0_0
-				i32.const 392
 				local.get $offset
+				i32.const 392
 				i32.add
+				local.set $data_ptr
+				local.get $lane_0_0
+				local.get $data_ptr
 				i64.load offset=0
 				i64.xor
 				local.set $lane_0_0
 				local.get $lane_1_0
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=8
 				i64.xor
 				local.set $lane_1_0
 				local.get $lane_2_0
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=16
 				i64.xor
 				local.set $lane_2_0
 				local.get $lane_3_0
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=24
 				i64.xor
 				local.set $lane_3_0
 				local.get $lane_4_0
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=32
 				i64.xor
 				local.set $lane_4_0
 				local.get $lane_0_1
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=40
 				i64.xor
 				local.set $lane_0_1
 				local.get $lane_1_1
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=48
 				i64.xor
 				local.set $lane_1_1
 				local.get $lane_2_1
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=56
 				i64.xor
 				local.set $lane_2_1
 				local.get $lane_3_1
-				i32.const 392
-				local.get $offset
-				i32.add
+				local.get $data_ptr
 				i64.load offset=64
 				i64.xor
 				local.set $lane_3_1
