@@ -142,12 +142,12 @@ async function run_bench(options) {
 	/** @type {Uint8Array} */
 	let digest = new Uint8Array();
 	for (let iteration = 0; iteration < options.warmupIterations; iteration++) {
-		sha3.createHash().update(message).digest();
+		sha3.reset().update(message).digest();
 	}
 
 	const start = performance.now();
 	for (let iteration = 0; iteration < options.iterations; iteration++) {
-		digest = sha3.createHash().update(message).digest();
+		digest = sha3.reset().update(message).digest();
 	}
 	const elapsed_ms = performance.now() - start;
 	const total_ms = elapsed_ms === 0 ? Number.EPSILON : elapsed_ms;
